@@ -1,5 +1,144 @@
 @import "tailwindcss";
 
+/* 
+  Custom Color Scheme for Assignment Tracker
+  Based on user specifications with complementary variations
+*/
+
+/* CSS Custom Properties for easy reference */
+:root {
+  /* Primary Colors */
+  --color-primary-dark: #357abd;
+  --color-primary-dark-50: rgba(53, 122, 189, 0.5);
+  --color-primary-dark-25: rgba(53, 122, 189, 0.25);
+
+  /* Success / Highlight / Completed */
+  --color-highlight: #10b981;
+  --color-completed: #10b981;
+
+  /* Warning / Pending */
+  --color-pending: #f59e0b;
+
+  /* Danger / Overdue / Due Soon */
+  --color-danger: #ef4444;
+  --color-overdue: #ef4444;
+  --color-due-soon: #ef4444;
+
+  /* Surface / Background */
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+}
+
+/* Extended Tailwind Theme Configuration */
+@theme {
+  /* Primary Dark - Blue (#357ABD) with variations */
+  --color-primary-50: #ebf5ff;
+  --color-primary-100: #d6ebff;
+  --color-primary-200: #add6ff;
+  --color-primary-300: #85c2ff;
+  --color-primary-400: #5cadff;
+  --color-primary-500: #357abd;
+  --color-primary-600: #2b6296;
+  --color-primary-700: #214a6f;
+  --color-primary-800: #173249;
+  --color-primary-900: #0d1a22;
+
+  /* Highlight / Success / Completed (#10B981 - Emerald) */
+  --color-highlight-50: #ecfdf5;
+  --color-highlight-100: #d1fae5;
+  --color-highlight-200: #a7f3d0;
+  --color-highlight-300: #6ee7b7;
+  --color-highlight-400: #34d399;
+  --color-highlight-500: #10b981;
+  --color-highlight-600: #059669;
+  --color-highlight-700: #047857;
+  --color-highlight-800: #065f46;
+  --color-highlight-900: #064e3b;
+
+  /* Completed (alias for highlight) */
+  --color-completed-50: var(--color-highlight-50);
+  --color-completed-100: var(--color-highlight-100);
+  --color-completed-200: var(--color-highlight-200);
+  --color-completed-300: var(--color-highlight-300);
+  --color-completed-400: var(--color-highlight-400);
+  --color-completed-500: var(--color-highlight-500);
+  --color-completed-600: var(--color-highlight-600);
+  --color-completed-700: var(--color-highlight-700);
+  --color-completed-800: var(--color-highlight-800);
+  --color-completed-900: var(--color-highlight-900);
+
+  /* Pending / Warning (#F59E0B - Amber) */
+  --color-pending-50: #fffbeb;
+  --color-pending-100: #fef3c7;
+  --color-pending-200: #fde68a;
+  --color-pending-300: #fcd34d;
+  --color-pending-400: #fbbf24;
+  --color-pending-500: #f59e0b;
+  --color-pending-600: #d97706;
+  --color-pending-700: #b45309;
+  --color-pending-800: #92400e;
+  --color-pending-900: #78350f;
+
+  /* Danger / Overdue / Due Soon (#EF4444 - Red) */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5;
+  --color-danger-400: #f87171;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d;
+
+  /* Overdue (alias for danger) */
+  --color-overdue-50: var(--color-danger-50);
+  --color-overdue-100: var(--color-danger-100);
+  --color-overdue-200: var(--color-danger-200);
+  --color-overdue-300: var(--color-danger-300);
+  --color-overdue-400: var(--color-danger-400);
+  --color-overdue-500: var(--color-danger-500);
+  --color-overdue-600: var(--color-danger-600);
+  --color-overdue-700: var(--color-danger-700);
+  --color-overdue-800: var(--color-danger-800);
+  --color-overdue-900: var(--color-danger-900);
+
+  /* Due Soon - Red with opacity variations */
+  --color-due-soon-50: #fef2f2;
+  --color-due-soon-100: #fee2e2;
+  --color-due-soon-200: #fecaca;
+  --color-due-soon-300: #fca5a5;
+  --color-due-soon-400: #f87171;
+  --color-due-soon-500: #ef4444;
+  --color-due-soon-600: #dc2626;
+  --color-due-soon-700: #b91c1c;
+  --color-due-soon-800: #991b1b;
+  --color-due-soon-900: #7f1d1d;
+
+  /* Surface / Background */
+  --color-surface-50: #ffffff;
+  --color-surface-100: #f9fafb;
+  --color-surface-200: #f3f4f6;
+  --color-surface-300: #e5e7eb;
+  --color-surface-400: #d1d5db;
+  --color-surface-500: #9ca3af;
+
+  /* Background (white) */
+  --color-background: #ffffff;
+
+  /* Gray neutral for text and borders */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+}
+
 /* Global Reset */
 * {
   margin: 0;
@@ -13,6 +152,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-background);
 }
 
 #root {
