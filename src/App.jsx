@@ -1,3 +1,4 @@
+import LandingPage from "./pages/LandingPage";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
@@ -65,6 +66,14 @@ function App() {
             element={
               <PublicRoute>
                 <SignupPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/landingpage"
+            element={
+              <PublicRoute>
+                <LandingPage />
               </PublicRoute>
             }
           />
