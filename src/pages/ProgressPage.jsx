@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useEffect, useRef } from "react";
 
 const courses = [
   { name: "Web Technologies", done: 4, total: 5, pct: 80 },
@@ -20,7 +19,6 @@ const pieSegments = [
 
 function PieChart() {
   const canvasRef = useRef(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -56,7 +54,6 @@ function PieChart() {
 
 function LineChart() {
   const canvasRef = useRef(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -71,20 +68,17 @@ function LineChart() {
       x: padL + i * xStep,
       y: padT + (1 - v / maxV) * (H - padT - padB),
     }));
-
     ctx.strokeStyle = "#2563EB";
     ctx.lineWidth = 2;
     ctx.beginPath();
     coords.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
     ctx.stroke();
-
     coords.forEach(p => {
       ctx.beginPath();
       ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
       ctx.fillStyle = "#2563EB";
       ctx.fill();
     });
-
     ctx.fillStyle = "#9CA3AF";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
@@ -94,11 +88,25 @@ function LineChart() {
   return <canvas ref={canvasRef} height={120} style={{ width: "100%", height: "120px" }} />;
 }
 
+function EmptyState({ icon, title, subtitle }) {
+  return (
+    <div style={styles.emptyState}>
+      <div style={styles.emptyIcon}>{icon}</div>
+      <p style={styles.emptyTitle}>{title}</p>
+      <p style={styles.emptySubtitle}>{subtitle}</p>
+    </div>
+  );
+}
+
 export default function ProgressPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState("Progress");
   const { user } = useAuth();
+
+  // Set this to true to see first time user view
+  // Stephen, kindly replace this with real logic, thanksss
+  const isFirstTimeUser = courses.length === 0;
 
   const firstName = user?.displayName?.split(" ")[0]
     || user?.name?.split(" ")[0]
@@ -190,7 +198,6 @@ export default function ProgressPage() {
 
       {/* MAIN CONTENT */}
       <div style={styles.content}>
-        {/* TOP NAV */}
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <button onClick={() => setSidebarOpen(v => !v)} style={styles.toggleBtn}>
@@ -218,15 +225,13 @@ export default function ProgressPage() {
           </div>
         </nav>
 
-        {/* PAGE CONTENT */}
         <main style={styles.main}>
-
-          {/* Stats Row */}
+          {/* Stats Row — always visible */}
           <div style={styles.statsRow}>
             {[
-              { label: "Overall completion", value: "65%", sub: "13 of 20 completed", color: "#2563EB", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
-              { label: "Completion", value: "13", sub: "Assignments finished", color: "#10b981", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg> },
-              { label: "In Progress", value: "5", sub: "Currently working on", color: "#f59e0b", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> },
+              { label: "Overall completion", value: isFirstTimeUser ? "0%" : "65%", sub: isFirstTimeUser ? "overall completion 0%" : "13 of 20 completed", color: "#2563EB", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+              { label: "Completion", value: isFirstTimeUser ? "0" : "13", sub: "Assignments finished", color: "#10b981", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg> },
+              { label: "In Progress", value: isFirstTimeUser ? "0" : "5", sub: "Currently working on", color: "#f59e0b", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> },
             ].map(({ label, value, sub, color, icon }) => (
               <div key={label} style={{ ...styles.statCard, borderTop: `3px solid ${color}` }}>
                 <div style={styles.statLabel}>
@@ -243,47 +248,73 @@ export default function ProgressPage() {
           <div style={styles.chartsGrid}>
             <div style={styles.card}>
               <p style={styles.cardTitle}>Progress by course</p>
-              <div style={styles.barChart}>
-                {courses.map(c => (
-                  <div key={c.name} style={styles.barWrap}>
-                    <div style={{ ...styles.bar, height: `${c.pct}px` }} />
-                    <span style={styles.barLabel}>{c.name.split(" ")[0]}</span>
-                  </div>
-                ))}
-              </div>
+              {isFirstTimeUser ? (
+                <EmptyState
+                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>}
+                  title="No courses yet"
+                  subtitle="Looks like you haven't started any courses yet. Enroll to see your progress."
+                />
+              ) : (
+                <div style={styles.barChart}>
+                  {courses.map(c => (
+                    <div key={c.name} style={styles.barWrap}>
+                      <div style={{ ...styles.bar, height: `${c.pct}px` }} />
+                      <span style={styles.barLabel}>{c.name.split(" ")[0]}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div style={styles.card}>
               <p style={styles.cardTitle}>Assignment distribution status</p>
-              <PieChart />
+              {isFirstTimeUser ? (
+                <EmptyState
+                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>}
+                  title="No assignments yet"
+                  subtitle="Your assignments will appear here as you progress. Start a course to get going."
+                />
+              ) : (
+                <PieChart />
+              )}
             </div>
           </div>
 
           {/* Line Chart */}
           <div style={{ ...styles.card, marginBottom: "16px" }}>
             <p style={styles.cardTitle}>Weekly Completion Trend</p>
-            <LineChart />
+            {isFirstTimeUser ? (
+              <EmptyState
+                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}
+                title="No data yet"
+                subtitle="Your weekly trend will develop once you start. Keep going!"
+              />
+            ) : (
+              <LineChart />
+            )}
           </div>
 
           {/* Course Details */}
-          <div style={styles.card}>
-            <p style={styles.cardTitle}>Course Details</p>
-            <div style={styles.courseList}>
-              {courses.map((c, i) => (
-                <div key={i} style={styles.courseRow}>
-                  <div style={styles.courseRowTop}>
-                    <span style={styles.courseName}>{c.name}</span>
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <span style={styles.courseStat}>{c.done}/{c.total}</span>
-                      <span style={styles.coursePct}>{c.pct}%</span>
+          {!isFirstTimeUser && (
+            <div style={styles.card}>
+              <p style={styles.cardTitle}>Course Details</p>
+              <div style={styles.courseList}>
+                {courses.map((c, i) => (
+                  <div key={i} style={styles.courseRow}>
+                    <div style={styles.courseRowTop}>
+                      <span style={styles.courseName}>{c.name}</span>
+                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                        <span style={styles.courseStat}>{c.done}/{c.total}</span>
+                        <span style={styles.coursePct}>{c.pct}%</span>
+                      </div>
+                    </div>
+                    <div style={styles.progressTrack}>
+                      <div style={{ ...styles.progressBar, width: `${c.pct}%` }} />
                     </div>
                   </div>
-                  <div style={styles.progressTrack}>
-                    <div style={{ ...styles.progressBar, width: `${c.pct}%` }} />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
@@ -321,6 +352,10 @@ const styles = {
   barWrap: { display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", flex: 1 },
   bar: { width: "100%", borderRadius: "4px 4px 0 0", background: "#2563EB" },
   barLabel: { fontSize: "10px", color: "#9CA3AF", textAlign: "center" },
+  emptyState: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px", gap: "10px" },
+  emptyIcon: { width: "56px", height: "56px", borderRadius: "50%", background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center" },
+  emptyTitle: { fontSize: "13px", fontWeight: "600", color: "#374151", textAlign: "center" },
+  emptySubtitle: { fontSize: "12px", color: "#9CA3AF", textAlign: "center", lineHeight: "1.6", maxWidth: "200px" },
   courseList: { display: "flex", flexDirection: "column", gap: "12px" },
   courseRow: { display: "flex", flexDirection: "column", gap: "4px" },
   courseRowTop: { display: "flex", justifyContent: "space-between", alignItems: "center" },
