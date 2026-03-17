@@ -14,6 +14,101 @@ const statusColor = (rate) => {
   return "#ef4444";
 };
 
+function ClassView() {
+  return (
+    <>
+      <div style={styles.noteCard}>
+        Note: This is a shared dashboard visible to all class members. Course representatives can post announcements and updates here.
+      </div>
+      <div style={styles.announcementBanner}>
+        <div style={styles.announcementBannerLeft}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <div>
+            <p style={styles.announcementTag}>Course Announcements</p>
+            <p style={styles.announcementText}>Proposal Extended Deadline</p>
+          </div>
+        </div>
+        <span style={styles.announcementTime}>2hr ago</span>
+      </div>
+      <div style={styles.card}>
+        <h2 style={styles.cardTitleCenter}>Assignment Submission Progress</h2>
+        <div style={styles.assignmentList}>
+          {assignments.map((a, i) => (
+            <div key={i} style={{
+              ...styles.assignmentRow,
+              borderBottom: i < assignments.length - 1 ? "1px solid #F3F4F6" : "none",
+            }}>
+              <div>
+                <p style={styles.assignmentTitle}>{a.title}</p>
+                <p style={styles.assignmentCourse}>{a.course}</p>
+              </div>
+              <div style={styles.assignmentRight}>
+                <div style={styles.dateTag}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span style={styles.dateText}>{a.date}</span>
+                </div>
+                <div style={styles.submittedBadge}>{a.submitted}/{a.total} submitted</div>
+              </div>
+              <div style={styles.progressWrapper}>
+                <div style={styles.progressTrack}>
+                  <div style={{ ...styles.progressBar, width: `${a.rate}%`, background: statusColor(a.rate) }}/>
+                </div>
+                <p style={styles.progressLabel}>{a.rate}% submission rate</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={styles.bottomGrid}>
+        <div style={styles.card}>
+          <div style={styles.cardHeaderRow}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <h2 style={styles.cardTitle}>Upcoming Deadlines</h2>
+          </div>
+          {assignments.map((a, i) => (
+            <div key={i} style={styles.deadlineItem}>
+              <div>
+                <p style={styles.deadlineDate}>{a.date}</p>
+                <p style={styles.deadlineTitle}>{a.title}</p>
+                <p style={styles.deadlineCourse}>{a.course}</p>
+              </div>
+              <div style={{ ...styles.rateBadge, background: statusColor(a.rate) + "20", color: statusColor(a.rate) }}>
+                {a.rate}%
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={styles.card}>
+          <div style={styles.cardHeaderRow}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            <h2 style={styles.cardTitle}>Class Statistics</h2>
+          </div>
+          {[
+            { label: "Total Students", value: "35" },
+            { label: "Active Assignments", value: "4" },
+            { label: "Avg. Submission Rate", value: "68%" },
+          ].map(({ label, value }) => (
+            <div key={label} style={styles.statRow}>
+              <span style={styles.statLabel}>{label}</span>
+              <span style={styles.statValue}>{value}</span>
+            </div>
+          ))}
 function OnboardingIllustration() {
   return (
     <div style={styles.illustrationWrapper}>
