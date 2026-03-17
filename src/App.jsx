@@ -8,6 +8,7 @@ import DashboardPage from "./pages/DashboardPage";
 import CoursesPage from "./pages/CoursesPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import ProgressPage from "./pages/ProgressPage";
 import ProfilePage from "./pages/ProfilePage";
 
 const ProtectedRoute = ({ children }) => {
@@ -116,6 +117,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <ProgressPage />
               </ProtectedRoute>
             }
           />
