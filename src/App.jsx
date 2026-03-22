@@ -8,6 +8,7 @@ import DashboardPage from "./pages/DashboardPage";
 import CoursesPage from "./pages/CoursesPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import ClassInfoPage from "./pages/ClassInfoPage";
 import ProgressPage from "./pages/ProgressPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import CalendarPage from "./pages/CalendarPage";
@@ -143,6 +144,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AnnouncementsPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/classinfo"
+            element={
+              <ProtectedRoute>
+                <ClassInfoPage />
               </ProtectedRoute>
             }
           />
