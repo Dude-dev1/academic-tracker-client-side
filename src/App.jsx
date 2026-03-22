@@ -10,6 +10,8 @@ import CoursesPage from "./pages/CoursesPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import ProgressPage from "./pages/ProgressPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
+import CalendarPage from "./pages/CalendarPage";
 import ProfilePage from "./pages/ProfilePage";
 
 const ProtectedRoute = ({ children }) => {
@@ -160,6 +162,14 @@ function App() {
             }
           />
           <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <CalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
@@ -167,12 +177,19 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/progress"
             element={
               <ProtectedRoute>
                 <ProgressPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/announcements"
+            element={
+              <ProtectedRoute>
+                <AnnouncementsPage />
               </ProtectedRoute>
             }
           />
