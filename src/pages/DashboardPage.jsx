@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-
+import { useNavigate } from "react-router-dom";
 const assignments = [
   { title: "Trial Balance 2", course: "Financial Accounting", date: "Feb 5, 2026", submitted: 28, total: 35, rate: 80 },
   { title: "Lab Report 3", course: "Data Structure", date: "Feb 4, 2026", submitted: 22, total: 35, rate: 63 },
@@ -78,7 +78,6 @@ function PersonalOnboarding({ firstName }) {
             <div style={{ ...styles.progressBar, width: "0%" }} />
           </div>
         </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <OnboardingIllustration />
           <div style={styles.card}>
@@ -332,11 +331,8 @@ function ClassView() {
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeNav, setActiveNav] = useState("Home");
   const { user } = useAuth();
 
-  // Change to true to test first time user view
-  // Stephhhhhhh replace this with the real thing abeg
   const isFirstTimeUser = false;
 
   const firstName = user?.displayName?.split(" ")[0]
@@ -347,62 +343,19 @@ export default function DashboardPage() {
   const initials = firstName.slice(0, 2).toUpperCase();
 
   const navItems = [
-    {
-      label: "Home", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      )
-    },
-    {
-      label: "Progress", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-      )
-    },
-    { 
-      label: "Calendar", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg> 
-      )
-    },
-    { 
-      label: "Assignments", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-        </svg>
-      )
-    },
-    { 
-      label: "Announcements", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-        </svg> 
-      )
-    },
+    { label: "Home", path: "/dashboard", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+    { label: "Progress", path: "/progress", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+    { label: "Calendar", path: "/calendar", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+    { label: "Assignments", path: "/assignments", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> },
+    { label: "Announcements", path: "/announcements", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 01２-２h１４a２ ２ ０ ０１２ ２z"/></svg> },
   ];
-
+  const navigate = useNavigate();
   const settingsItem = {
-    label: "Settings", icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/>
-      </svg>
-    )
+    label: "Settings", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/></svg>
   };
 
-  const renderPersonal = () => {
-    if (isFirstTimeUser) return <PersonalOnboarding firstName={firstName} />;
-    return <PersonalView firstName={firstName} />;
-  };
-
-  const renderClass = () => {
-    if (isFirstTimeUser) return <ClassOnboarding />;
-    return <ClassView />;
+  const profileItem = {
+    label: "Profile", icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
   };
 
   return (
@@ -423,25 +376,35 @@ export default function DashboardPage() {
           {sidebarOpen && <span style={styles.sidebarLogoName}>Agenda</span>}
         </div>
         <div style={styles.navItems}>
-          {navItems.map(({ label, icon }) => (
-            <button key={label} onClick={() => setActiveNav(label)} title={!sidebarOpen ? label : ""} style={{
-              ...styles.navItem,
-              background: activeNav === label ? "#EFF6FF" : "transparent",
-              color: activeNav === label ? "#2563EB" : "#6B7280",
-              borderLeft: activeNav === label ? "3px solid #2563EB" : "3px solid transparent",
-              justifyContent: sidebarOpen ? "flex-start" : "center",
-            }}>
-              {icon}
-              {sidebarOpen && <span style={styles.navLabel}>{label}</span>}
-            </button>
-          ))}
+          {navItems.map(({ label, icon, path }) => (
+  <button key={label} onClick={() => navigate(path)} title={!sidebarOpen ? label : ""} style={{
+    ...styles.navItem,
+    background: location.pathname === path ? "#EFF6FF" : "transparent",
+    color: location.pathname === path ? "#2563EB" : "#6B7280",
+    borderLeft: location.pathname === path ? "3px solid #2563EB" : "3px solid transparent",
+    justifyContent: sidebarOpen ? "flex-start" : "center",
+  }}>
+    {icon}
+    {sidebarOpen && <span style={styles.navLabel}>{label}</span>}
+  </button>
+))}
         </div>
         <div style={styles.sidebarBottom}>
-          <button onClick={() => setActiveNav("Settings")} title={!sidebarOpen ? "Settings" : ""} style={{
+          <button onClick={() => navigate("/profile")} title={!sidebarOpen ? "Profile" : ""} style={{
             ...styles.navItem,
-            background: activeNav === "Settings" ? "#EFF6FF" : "transparent",
-            color: activeNav === "Settings" ? "#2563EB" : "#6B7280",
-            borderLeft: activeNav === "Settings" ? "3px solid #2563EB" : "3px solid transparent",
+            background: location.pathname === "/profile" ? "#EFF6FF" : "transparent",
+            color: location.pathname === "/profile" ? "#2563EB" : "#6B7280",
+            borderLeft: location.pathname === "/profile" ? "3px solid #2563EB" : "3px solid transparent",
+            justifyContent: sidebarOpen ? "flex-start" : "center",
+          }}>
+            {profileItem.icon}
+            {sidebarOpen && <span style={styles.navLabel}>Profile</span>}
+          </button>
+          <button onClick={() => navigate("/settings")} title={!sidebarOpen ? "Settings" : ""} style={{
+            ...styles.navItem,
+            background: location.pathname === "/settings" ? "#EFF6FF" : "transparent",
+            color: location.pathname === "/settings" ? "#2563EB" : "#6B7280",
+            borderLeft: location.pathname === "/settings" ? "3px solid #2563EB" : "3px solid transparent",
             justifyContent: sidebarOpen ? "flex-start" : "center",
           }}>
             {settingsItem.icon}
@@ -480,7 +443,7 @@ export default function DashboardPage() {
         </nav>
 
         <main style={styles.main}>
-          {activeTab === "Personal" ? renderPersonal() : renderClass()}
+          {activeTab === "Personal" ? (isFirstTimeUser ? <PersonalOnboarding firstName={firstName} /> : <PersonalView firstName={firstName} />) : (isFirstTimeUser ? <ClassOnboarding /> : <ClassView />)}
         </main>
 
         {/* FOOTER */}
