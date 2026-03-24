@@ -1,1 +1,1 @@
-The client side for our academic trakcer app
+The client side for our academic tracker app, Agenda.
