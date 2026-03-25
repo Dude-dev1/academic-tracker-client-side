@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-
+import { useNavigate } from "react-router-dom";
 const assignments = [
   {
     title: "Trial Balance 2",
@@ -107,7 +107,6 @@ function PersonalOnboarding({ firstName }) {
             <div style={{ ...styles.progressBar, width: "0%" }} />
           </div>
         </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <OnboardingIllustration />
           <div style={styles.card}>
@@ -561,12 +560,9 @@ function ClassView() {
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeNav, setActiveNav] = useState("Home");
   const { user } = useAuth();
 
-  // Change to true to test first time user view
-  // Stephhhhhhh replace this with the real thing abeg
-  const isFirstTimeUser = true;
+  const isFirstTimeUser = false;
 
   const firstName =
     user?.displayName?.split(" ")[0] ||
@@ -680,14 +676,21 @@ export default function DashboardPage() {
     ),
   };
 
-  const renderPersonal = () => {
-    if (isFirstTimeUser) return <PersonalOnboarding firstName={firstName} />;
-    return <PersonalView firstName={firstName} />;
-  };
-
-  const renderClass = () => {
-    if (isFirstTimeUser) return <ClassOnboarding />;
-    return <ClassView />;
+  const profileItem = {
+    label: "Profile",
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
   };
 
   return (
@@ -715,17 +718,18 @@ export default function DashboardPage() {
           {sidebarOpen && <span style={styles.sidebarLogoName}>Agenda</span>}
         </div>
         <div style={styles.navItems}>
-          {navItems.map(({ label, icon }) => (
+          {navItems.map(({ label, icon, path }) => (
             <button
               key={label}
-              onClick={() => setActiveNav(label)}
+              onClick={() => navigate(path)}
               title={!sidebarOpen ? label : ""}
               style={{
                 ...styles.navItem,
-                background: activeNav === label ? "#EFF6FF" : "transparent",
-                color: activeNav === label ? "#2563EB" : "#6B7280",
+                background:
+                  location.pathname === path ? "#EFF6FF" : "transparent",
+                color: location.pathname === path ? "#2563EB" : "#6B7280",
                 borderLeft:
-                  activeNav === label
+                  location.pathname === path
                     ? "3px solid #2563EB"
                     : "3px solid transparent",
                 justifyContent: sidebarOpen ? "flex-start" : "center",
@@ -738,14 +742,33 @@ export default function DashboardPage() {
         </div>
         <div style={styles.sidebarBottom}>
           <button
-            onClick={() => setActiveNav("Settings")}
+            onClick={() => navigate("/profile")}
+            title={!sidebarOpen ? "Profile" : ""}
+            style={{
+              ...styles.navItem,
+              background:
+                location.pathname === "/profile" ? "#EFF6FF" : "transparent",
+              color: location.pathname === "/profile" ? "#2563EB" : "#6B7280",
+              borderLeft:
+                location.pathname === "/profile"
+                  ? "3px solid #2563EB"
+                  : "3px solid transparent",
+              justifyContent: sidebarOpen ? "flex-start" : "center",
+            }}
+          >
+            {profileItem.icon}
+            {sidebarOpen && <span style={styles.navLabel}>Profile</span>}
+          </button>
+          <button
+            onClick={() => navigate("/settings")}
             title={!sidebarOpen ? "Settings" : ""}
             style={{
               ...styles.navItem,
-              background: activeNav === "Settings" ? "#EFF6FF" : "transparent",
-              color: activeNav === "Settings" ? "#2563EB" : "#6B7280",
+              background:
+                location.pathname === "/settings" ? "#EFF6FF" : "transparent",
+              color: location.pathname === "/settings" ? "#2563EB" : "#6B7280",
               borderLeft:
-                activeNav === "Settings"
+                location.pathname === "/settings"
                   ? "3px solid #2563EB"
                   : "3px solid transparent",
               justifyContent: sidebarOpen ? "flex-start" : "center",
@@ -801,7 +824,17 @@ export default function DashboardPage() {
         </nav>
 
         <main style={styles.main}>
-          {activeTab === "Personal" ? renderPersonal() : renderClass()}
+          {activeTab === "Personal" ? (
+            isFirstTimeUser ? (
+              <PersonalOnboarding firstName={firstName} />
+            ) : (
+              <PersonalView firstName={firstName} />
+            )
+          ) : isFirstTimeUser ? (
+            <ClassOnboarding />
+          ) : (
+            <ClassView />
+          )}
         </main>
       </div>
     </div>
