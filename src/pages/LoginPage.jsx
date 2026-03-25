@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate, Link } from "react-router-dom";
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -51,11 +53,25 @@ export default function LoginPage() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSignIn = (e) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 2000);
+    setErrorMsg("");
+    try {
+      await login({ email, password });
+      navigate("/dashboard");
+    } catch (err) {
+      setErrorMsg(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
+      setLoading(false);
+    }
   };
 
   return (
@@ -96,6 +112,11 @@ export default function LoginPage() {
           </div>
           <h1 style={styles.title}>Welcome back</h1>
           <p style={styles.subtitle}>Sign in to continue your journey</p>
+          {errorMsg && (
+            <p style={{ color: "red", fontSize: "14px", marginTop: "10px" }}>
+              {errorMsg}
+            </p>
+          )}
         </div>
 
         {/* Form */}
@@ -202,20 +223,24 @@ export default function LoginPage() {
 
         {/* Social buttons */}
         <div style={styles.socialGroup}>
-          {[{ icon: <GoogleIcon />, label: "Google" }].map(
-            ({ icon, label }) => (
-              <button key={label} style={styles.socialBtn} type="button">
-                {icon}
-                <span style={styles.socialLabel}>{label}</span>
-              </button>
-            )
-          )}
+          <button
+            style={styles.socialBtn}
+            type="button"
+            onClick={() => {
+              window.location.href = "http://localhost:5000/api/auth/google";
+            }}
+          >
+            <GoogleIcon />
+            <span style={styles.socialLabel}>Google</span>
+          </button>
         </div>
 
         {/* Footer */}
         <p style={styles.footer}>
           Don't have an account?{" "}
-          <a href="/signup" style={styles.signUpLink}>Sign up</a>
+          <Link to="/signup" style={styles.signUpLink}>
+            Sign up
+          </Link>
         </p>
       </div>
 

@@ -13,6 +13,7 @@ import ProgressPage from "./pages/ProgressPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import CalendarPage from "./pages/CalendarPage";
 import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -125,6 +126,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <AnnouncementsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
                   </ProtectedRoute>
                 }
               />
