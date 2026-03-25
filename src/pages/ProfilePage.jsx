@@ -151,6 +151,96 @@ export default function ProfilePage() {
             </button>
           </div>
 
+          {/* Badges Section */}
+          <div style={styles.divider}>
+            <div style={styles.dividerLine} />
+            <span style={styles.dividerText}>EARNED BADGES</span>
+            <div style={styles.dividerLine} />
+          </div>
+
+          <div style={styles.badgesGroup}>
+            {[
+              {
+                icon: (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#F59E0B"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                    <path d="M4 22h16" />
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+                  </svg>
+                ),
+                label: "Top Achiever",
+              },
+              {
+                icon: (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#EAB308"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                ),
+                label: "Perfect Score",
+              },
+              {
+                icon: (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#EF4444"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+                  </svg>
+                ),
+                label: "7-Day Streak",
+              },
+              {
+                icon: (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#2563EB"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                ),
+                label: "Early Bird",
+              },
+            ].map((badge, idx) => (
+              <div key={idx} style={styles.badgeBtn}>
+                <span style={styles.badgeIcon}>{badge.icon}</span>
+                <span style={styles.badgeLabel}>{badge.label}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Info Grid */}
           <div style={styles.grid2}>
             <div style={styles.card}>
@@ -485,6 +575,50 @@ const styles = {
     whiteSpace: "nowrap",
     flexShrink: 0,
   },
+  divider: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    margin: "8px 0 20px",
+  },
+  dividerLine: { flex: 1, height: "1px", background: "#E5E7EB" },
+  dividerText: {
+    fontSize: "12px",
+    color: "#9CA3AF",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  badgesGroup: {
+    display: "flex",
+    gap: "12px",
+    marginBottom: "24px",
+    overflowX: "auto",
+    paddingBottom: "4px", // to show full box-shadow if any
+  },
+  badgeBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    padding: "0 16px",
+    height: "40px",
+    border: "1.5px solid #E5E7EB",
+    borderRadius: "10px",
+    background: "#fff",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#374151",
+    fontFamily: "'DM Sans', sans-serif",
+    flexShrink: 0,
+    cursor: "default",
+  },
+  badgeIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeLabel: { whiteSpace: "nowrap" },
   grid2: {
     display: "grid",
     gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
