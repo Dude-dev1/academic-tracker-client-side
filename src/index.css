@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 /* CSS Custom Properties */
->>>>>>> main
 :root {
   --color-primary-dark: #357abd;
   --color-highlight: #10b981;
@@ -21,7 +18,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

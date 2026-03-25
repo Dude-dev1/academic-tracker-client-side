@@ -612,27 +612,54 @@ export default function DashboardPage() {
         </svg>
       ),
     },
-    { 
-      label: "Calendar", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg> 
-      )
-    },
-    { 
-      label: "Assignments", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    {
+      label: "Calendar",
+      icon: (
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
-      )
+      ),
     },
-    { 
-      label: "Announcements", icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-        </svg> 
-      )
+    {
+      label: "Assignments",
+      icon: (
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+        </svg>
+      ),
+    },
+    {
+      label: "Announcements",
+      icon: (
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        </svg>
+      ),
     },
   ];
 
@@ -776,78 +803,6 @@ export default function DashboardPage() {
         <main style={styles.main}>
           {activeTab === "Personal" ? renderPersonal() : renderClass()}
         </main>
-
-        {/* FOOTER */}
-        <footer style={styles.footer}>
-          <div style={styles.footerGrid}>
-            <div>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="#2563EB" />
-                  <path
-                    d="M8 10h10M8 16h16M8 22h6"
-                    stroke="white"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span style={styles.footerLogoName}>Agenda</span>
-              </div>
-              <p style={styles.footerTagline}>
-                Stay on top of your assignments without stress.
-              </p>
-            </div>
-            <div>
-              <p style={styles.footerHeading}>Quick Links</p>
-              {["Home", "About", "Courses", "Dashboard"].map((l) => (
-                <a key={l} href="#" style={styles.footerLink}>
-                  {l}
-                </a>
-              ))}
-            </div>
-            <div>
-              <p style={styles.footerHeading}>Contact Us</p>
-              <p style={styles.footerText}>📧 webdev28@cs3.knust.edu.gh</p>
-              <p style={styles.footerText}>📞 000 000 0000</p>
-              <p style={styles.footerText}>📍 KNUST, Ghana</p>
-            </div>
-            <div>
-              <p style={styles.footerHeading}>Follow Us</p>
-              <div style={styles.socialIcons}>
-                {["f", "t", "in", "yt"].map((s) => (
-                  <span key={s} style={styles.socialIcon}>
-                    {s}
-                  </span>
-                ))}
-              </div>
-              <p style={{ ...styles.footerHeading, marginTop: "16px" }}>
-                Newsletter
-              </p>
-              <div style={styles.newsletterRow}>
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  style={styles.newsletterInput}
-                />
-                <button style={styles.newsletterBtn}>Join</button>
-              </div>
-            </div>
-          </div>
-          <div style={styles.footerBottom}>
-            <p style={styles.footerCopy}>© 2025 Agenda. All rights reserved.</p>
-            <div style={styles.footerBottomLinks}>
-              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-                (l) => (
-                  <a key={l} href="#" style={styles.footerSmallLink}>
-                    {l}
-                  </a>
-                )
-              )}
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );
@@ -856,8 +811,10 @@ export default function DashboardPage() {
 const styles = {
   root: {
     display: "flex",
+    flex: 1,
     minHeight: "100vh",
-    background: "#F0F4FF",
+    width: "100%",
+    background: "#fafbfc",
     fontFamily: "'DM Sans', sans-serif",
   },
   sidebar: {
@@ -963,7 +920,13 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
   },
-  main: { padding: "32px", flex: 1, animation: "fadeUp 0.4s ease both" },
+  main: {
+    padding: "32px",
+    flex: 1,
+    animation: "fadeUp 0.4s ease both",
+    overflowY: "auto",
+    overflowX: "hidden",
+  },
   welcomeBlock: { marginBottom: "20px" },
   welcomeTitle: {
     fontFamily: "'Fraunces', serif",
@@ -1100,7 +1063,8 @@ const styles = {
     background: "#fff",
     borderRadius: "12px",
     padding: "16px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    border: "1px solid #f0f0f0",
   },
   statCardValue: {
     fontSize: "22px",
@@ -1118,7 +1082,8 @@ const styles = {
     background: "#fff",
     borderRadius: "16px",
     padding: "20px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+    border: "1px solid #f0f0f0",
   },
   cardHeaderRow: {
     display: "flex",
@@ -1266,7 +1231,12 @@ const styles = {
   announcementTag: { fontSize: "11px", color: "#9CA3AF" },
   announcementText: { fontSize: "13px", fontWeight: "500", color: "#111827" },
   announcementTime: { fontSize: "11px", color: "#9CA3AF" },
-  bottomGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
+  bottomGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "20px",
+    marginBottom: "32px",
+  },
   assignmentList: { display: "flex", flexDirection: "column", gap: "20px" },
   assignmentRow: {
     display: "grid",
@@ -1322,91 +1292,4 @@ const styles = {
   },
   statLabel: { fontSize: "13px", color: "#6B7280" },
   statValue: { fontSize: "13px", fontWeight: "600", color: "#111827" },
-  footer: { background: "#111827", padding: "60px 64px 32px" },
-  footerGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "40px",
-    marginBottom: "40px",
-  },
-  footerLogoName: {
-    fontFamily: "'Fraunces', serif",
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#2563EB",
-  },
-  footerTagline: {
-    fontSize: "13px",
-    color: "#9CA3AF",
-    marginTop: "12px",
-    lineHeight: "1.6",
-  },
-  footerHeading: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: "12px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-  footerLink: {
-    display: "block",
-    fontSize: "13px",
-    color: "#9CA3AF",
-    textDecoration: "none",
-    marginBottom: "8px",
-  },
-  footerText: { fontSize: "13px", color: "#9CA3AF", marginBottom: "8px" },
-  socialIcons: { display: "flex", gap: "12px", marginBottom: "8px" },
-  socialIcon: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "8px",
-    background: "#1F2937",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "12px",
-    fontWeight: "700",
-    color: "#9CA3AF",
-    cursor: "pointer",
-  },
-  newsletterRow: { display: "flex", gap: "8px", marginTop: "8px" },
-  newsletterInput: {
-    flex: 1,
-    padding: "8px 12px",
-    borderRadius: "8px",
-    border: "1px solid #374151",
-    background: "#1F2937",
-    color: "#fff",
-    fontSize: "13px",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  newsletterBtn: {
-    padding: "8px 14px",
-    borderRadius: "8px",
-    background: "#2563EB",
-    color: "#fff",
-    border: "none",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  footerBottom: {
-    borderTop: "1px solid #1F2937",
-    paddingTop: "24px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "12px",
-  },
-  footerCopy: { fontSize: "12px", color: "#6B7280" },
-  footerBottomLinks: { display: "flex", gap: "20px" },
-  footerSmallLink: {
-    fontSize: "12px",
-    color: "#6B7280",
-    textDecoration: "none",
-  },
 };
