@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import Sidebar from "../components/ui/Sidebar";
 
 const courses = [
   { name: "Web Technologies", done: 4, total: 5, pct: 80 },

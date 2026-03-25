@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ sidebarOpen = true }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -207,6 +207,26 @@ const Sidebar = ({ sidebarOpen = true }) => {
     ),
   };
 
+  const logoutItem = {
+    label: "Logout",
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
+      </svg>
+    ),
+  };
+
   return (
     <aside style={{ ...styles.sidebar, width: sidebarOpen ? "220px" : "64px" }}>
       <div style={styles.sidebarLogo}>
@@ -280,6 +300,23 @@ const Sidebar = ({ sidebarOpen = true }) => {
         >
           {settingsItem.icon}
           {sidebarOpen && <span style={styles.navLabel}>Settings</span>}
+        </button>
+
+        <button
+          onClick={() => logout()}
+          title={!sidebarOpen ? "Logout" : ""}
+          style={{
+            ...styles.navItem,
+            background: "transparent",
+            color: "#EF4444",
+            borderLeft: "3px solid transparent",
+            justifyContent: sidebarOpen ? "flex-start" : "center",
+            marginTop: "24px",
+            borderTop: "1px solid #E5E7EB",
+          }}
+        >
+          {logoutItem.icon}
+          {sidebarOpen && <span style={styles.navLabel}>Logout</span>}
         </button>
       </div>
     </aside>
