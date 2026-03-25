@@ -2,8 +2,6 @@ import LandingPage from "./pages/LandingPage";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./context/ThemeContext";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -15,76 +13,9 @@ import ProgressPage from "./pages/ProgressPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import CalendarPage from "./pages/CalendarPage";
 import ProfilePage from "./pages/ProfilePage";
-
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            width: "3rem",
-            height: "3rem",
-            borderRadius: "50%",
-            borderWidth: "0 0 2px 0",
-            borderStyle: "solid",
-            borderColor: "#2563eb",
-            animation: "spin 0.7s linear infinite",
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
-
-const PublicRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            width: "3rem",
-            height: "3rem",
-            borderRadius: "50%",
-            borderWidth: "0 0 2px 0",
-            borderStyle: "solid",
-            borderColor: "#2563eb",
-            animation: "spin 0.7s linear infinite",
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return children;
-};
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   const { darkMode } = useTheme();
@@ -103,9 +34,7 @@ function App() {
         }
       `}</style>
       <div className="flex flex-1">
-        {user && <Sidebar />}
         <div className="flex-1 flex flex-col w-full min-w-0">
-          {user && <Header />}
           <main className="flex-1 flex flex-col w-full">
             <Routes>
               {/* Public Routes */}
@@ -138,9 +67,9 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <PublicRoute>
+                  <ProtectedRoute>
                     <DashboardPage />
-                  </PublicRoute>
+                  </ProtectedRoute>
                 }
               />
               <Route
@@ -202,9 +131,9 @@ function App() {
               <Route
                 path="/classinfo"
                 element={
-                  <ProtectedRoute>
+                  <AdminRoute>
                     <ClassInfoPage />
-                  </ProtectedRoute>
+                  </AdminRoute>
                 }
               />
 
