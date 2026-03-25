@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import Sidebar from "../components/ui/Sidebar";
 export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user } = useAuth();
