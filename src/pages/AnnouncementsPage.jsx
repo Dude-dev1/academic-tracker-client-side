@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 import Modal from "../components/ui/Modal";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import Sidebar from "../components/ui/Sidebar";
 import announcementService from "../services/announcementService";
 
 export default function AnnouncementsPage() {
+  const { addToast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [announcements, setAnnouncements] = useState([]);
   const [search, setSearch] = useState("");
@@ -49,12 +51,15 @@ export default function AnnouncementsPage() {
           prev.map((a) => (a._id === editingId || a.id === editingId ? updatedAnn : a))
         );
       } else {
-        const newAnn = await announcementService.createAnnouncement({
+        await announcementService.createAnnouncement({
+    // added dynamically via api, but triggering toast locally works before promise resolves if we want, or better after await
+    // added dynamically via api, but triggering toast locally works before promise resolves if we want, or better after await
           title: newTitle,
           body: newBody,
           pinned: false,
           iconColor: "#2563EB",
         });
+        addToast("Success", "Announcement created successfully", "success");
         setAnnouncements([newAnn, ...announcements]);
       }
       setIsModalOpen(false);

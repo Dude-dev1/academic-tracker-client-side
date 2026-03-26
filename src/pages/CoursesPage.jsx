@@ -10,8 +10,10 @@ import {
   deleteCourse,
 } from "../services/courseService";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 
 export default function CoursesPage() {
+  const { addToast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -75,6 +77,7 @@ export default function CoursesPage() {
         await updateCourse(editingId, formData);
       } else {
         await createCourse(formData);
+      addToast("Success", "Course added successfully", "success");
       }
       closeModal();
       fetchCourses();

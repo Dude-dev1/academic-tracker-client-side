@@ -3,23 +3,11 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/ui/Sidebar";
 
-const courses = [
-  { name: "Web Technologies", done: 4, total: 5, pct: 80 },
-  { name: "Data Structures", done: 3, total: 5, pct: 60 },
-  { name: "Financial Accounting", done: 2, total: 4, pct: 50 },
-  { name: "Database Systems", done: 4, total: 6, pct: 67 },
-];
+import { getCourses } from "../services/courseService";
+import assignmentService from "../services/assignmentService";
 
-const weeklyData = [3, 1, 4, 6, 2, 5];
-const weekLabels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"];
 
-const pieSegments = [
-  { label: "Completed", pct: 65, color: "#10b981" },
-  { label: "Pending", pct: 25, color: "#f59e0b" },
-  { label: "Overdue", pct: 10, color: "#ef4444" },
-];
-
-function PieChart() {
+function PieChart({ pieSegments = [] }) {
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -30,7 +18,7 @@ function PieChart() {
       cy = 55,
       r = 45;
     pieSegments.forEach((s) => {
-      const angle = (s.pct / 100) * 2 * Math.PI;
+      const angle = ((s.pct || 0) / 100) * 2 * Math.PI;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, r, start, start + angle);
@@ -39,7 +27,11 @@ function PieChart() {
       ctx.fill();
       start += angle;
     });
-  }, []);
+  }, [pieSegments]);
+
+  
+
+  
 
   return (
     <div
@@ -76,7 +68,7 @@ function PieChart() {
   );
 }
 
-function LineChart() {
+function LineChart({ weeklyData = [], weekLabels = [] }) {
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -85,7 +77,7 @@ function LineChart() {
     const W = canvas.offsetWidth || 700;
     const H = 120;
     canvas.width = W;
-    const maxV = Math.max(...weeklyData);
+    const maxV = Math.max(...weeklyData, 1); // Avoid division by 0
     const padL = 24,
       padR = 16,
       padT = 10,
@@ -112,7 +104,7 @@ function LineChart() {
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
     weekLabels.forEach((l, i) => ctx.fillText(l, coords[i].x, H - 6));
-  }, []);
+  }, [weeklyData, weekLabels]);
 
   return (
     <canvas
@@ -134,23 +126,103 @@ function EmptyState({ icon, title, subtitle }) {
 }
 
 export default function ProgressPage() {
-  const [activeTab, setActiveTab] = useState("Personal");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user } = useAuth();
-
-  // Set this to true to see first time user view
-  // Stephen, kindly replace this with real logic, thanksss
-  const isFirstTimeUser = courses.length === 0;
-
-  const firstName =
-    user?.displayName?.split(" ")[0] ||
-    user?.name?.split(" ")[0] ||
-    user?.email?.split("@")[0] ||
-    "there";
-
-  const initials = firstName.slice(0, 2).toUpperCase();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Dynamic Data States
+  const [courses, setCourses] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [pieSegments, setPieSegments] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [weekLabels, setWeekLabels] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [coursesRes, assignmentsRes] = await Promise.all([
+          getCourses(),
+          assignmentService.getAssignments()
+        ]);
+        
+        const fetchedCourses = coursesRes.data?.data || [];
+        const fetchedAssignments = assignmentsRes.data?.data || [];
+
+        // compute course stats
+        const courseStats = fetchedCourses.map(c => {
+          const courseAssignments = fetchedAssignments.filter(a => typeof a.course === 'object' ? a.course?._id === c._id : a.course === c._id);
+          const total = courseAssignments.length;
+          const done = courseAssignments.filter(a => a.status === 'completed').length;
+          return {
+            name: c.name || c.title,
+            done,
+            total,
+            pct: total > 0 ? Math.round((done / total) * 100) : 0
+          };
+        });
+        setCourses(courseStats);
+
+        // compute pie segments
+        const totalAsgn = fetchedAssignments.length;
+        if (totalAsgn > 0) {
+          const completed = fetchedAssignments.filter(a => a.status === 'completed').length;
+          const overdue = fetchedAssignments.filter(a => a.status === 'overdue').length;
+          const pending = totalAsgn - completed - overdue;
+          setPieSegments([
+            { label: "Completed", pct: Math.round((completed / totalAsgn) * 100), color: "#10b981", raw: completed },
+            { label: "Pending", pct: Math.round((pending / totalAsgn) * 100), color: "#f59e0b", raw: pending },
+            { label: "Overdue", pct: Math.round((overdue / totalAsgn) * 100), color: "#ef4444", raw: overdue },
+          ]);
+        } else {
+          setPieSegments([
+            { label: "Completed", pct: 0, color: "#10b981", raw: 0 },
+            { label: "Pending", pct: 0, color: "#f59e0b", raw: 0 },
+            { label: "Overdue", pct: 0, color: "#ef4444", raw: 0 },
+          ]);
+        }
+
+        // compute weekly data (mock past 6 weeks based on completed assignments)
+        // just sample data based on counts for now instead of actual dates since not all assignments have clear completion dates
+        const wd = [0, 0, 0, 0, 0, 0];
+        const now = new Date();
+        fetchedAssignments.forEach(a => {
+          if (a.status === 'completed') {
+            const due = new Date(a.dueDate || now);
+            const diffDays = Math.floor((now - due) / (1000 * 60 * 60 * 24));
+            const weekIdx = 5 - Math.floor(diffDays / 7);
+            if (weekIdx >= 0 && weekIdx <= 5) {
+              wd[weekIdx]++;
+            }
+          }
+        });
+        setWeeklyData(wd);
+        setWeekLabels(["W-5", "W-4", "W-3", "W-2", "Last Wk", "This Wk"]);
+
+      } catch (err) {
+        console.error("Error fetching progress data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) fetchData();
+  }, [user]);
+
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading progress...</div>;
+
+  // Derived stats
+  const isFirstTimeUser = courses.length === 0 && assignments.length === 0;
+  const totalAssigned = assignments.length;
+  const completedCount = assignments.filter(a => a.status === 'completed').length;
+  const inProgressCount = totalAssigned - completedCount - assignments.filter(a => a.status === 'overdue').length;
+  const overallPct = totalAssigned > 0 ? Math.round((completedCount / totalAssigned) * 100) : 0;
+
+  const initials = user?.name
+    ? user.name.charAt(0).toUpperCase()
+    : user?.email?.charAt(0).toUpperCase() || "U";
 
   return (
     <div style={styles.root}>
@@ -160,14 +232,14 @@ export default function ProgressPage() {
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      <Sidebar sidebarOpen={sidebarOpen} />
+      <Sidebar sidebarOpen={isSidebarOpen} />
 
       {/* MAIN CONTENT */}
       <div style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <button
-              onClick={() => setSidebarOpen((v) => !v)}
+              onClick={() => setIsSidebarOpen(v => !v)}
               style={styles.toggleBtn}
             >
               <svg
@@ -211,10 +283,8 @@ export default function ProgressPage() {
             {[
               {
                 label: "Overall completion",
-                value: isFirstTimeUser ? "0%" : "65%",
-                sub: isFirstTimeUser
-                  ? "overall completion 0%"
-                  : "13 of 20 completed",
+                value: `${overallPct}%`,
+                sub: `${completedCount} of ${totalAssigned} completed`,
                 color: "#2563EB",
                 icon: (
                   <svg
@@ -233,7 +303,7 @@ export default function ProgressPage() {
               },
               {
                 label: "Completion",
-                value: isFirstTimeUser ? "0" : "13",
+                value: completedCount.toString(),
                 sub: "Assignments finished",
                 color: "#10b981",
                 icon: (
@@ -252,7 +322,7 @@ export default function ProgressPage() {
               },
               {
                 label: "In Progress",
-                value: isFirstTimeUser ? "0" : "5",
+                value: inProgressCount.toString(),
                 sub: "Currently working on",
                 color: "#f59e0b",
                 icon: (
@@ -340,7 +410,7 @@ export default function ProgressPage() {
                   subtitle="Your assignments will appear here as you progress. Start a course to get going."
                 />
               ) : (
-                <PieChart />
+                <PieChart pieSegments={pieSegments} />
               )}
             </div>
           </div>
@@ -366,7 +436,7 @@ export default function ProgressPage() {
                 subtitle="Your weekly trend will develop once you start. Keep going!"
               />
             ) : (
-              <LineChart />
+              <LineChart weeklyData={weeklyData} weekLabels={weekLabels} />
             )}
           </div>
 

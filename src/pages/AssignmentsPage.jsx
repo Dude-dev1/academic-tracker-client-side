@@ -138,6 +138,7 @@ function AssignmentRow({ row, onDelete, onEdit }) {
 }
 
 export default function AssignmentsPage() {
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -221,6 +222,7 @@ export default function AssignmentsPage() {
         await assignmentService.updateAssignment(editingId, payload);
       } else {
         await assignmentService.createAssignment(payload);
+        addToast("Success", "Assignment created successfully", "success");
       }
       setIsModalOpen(false);
 
@@ -235,10 +237,7 @@ export default function AssignmentsPage() {
       fetchData();
     } catch (err) {
       console.error(err);
-      alert(
-        err.response?.data?.message ||
-          `Failed to ${editingId ? "update" : "create"} assignment`
-      );
+      addToast("Failed", err.response?.data?.message || `Failed to ${editingId ? "update" : "create"} assignment`, "error");
     }
   };
 
@@ -280,7 +279,7 @@ export default function AssignmentsPage() {
       setItemToDelete(null);
     } catch (err) {
       console.error("Delete failed", err);
-      alert(err.response?.data?.message || "Delete failed");
+      addToast("Failed", err.response?.data?.message || "Delete failed", "error");
     }
   };
 

@@ -2,6 +2,7 @@ import LandingPage from "./pages/LandingPage";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./context/ThemeContext";
+import useWebNotifications from "./hooks/useWebNotifications";
 import LoginPage from "./pages/LoginPage";
 import GoogleCallbackPage from "./pages/GoogleCallbackPage";
 import SignupPage from "./pages/SignupPage";
@@ -22,6 +23,7 @@ import AdminRoute from "./components/AdminRoute";
 function App() {
   const { darkMode } = useTheme();
   const { user } = useAuth();
+  useWebNotifications();
 
   return (
     <div

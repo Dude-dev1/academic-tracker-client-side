@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
 import Modal from "../components/ui/Modal";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import Sidebar from "../components/ui/Sidebar";
@@ -149,6 +150,7 @@ function DetailPanel({ event, day, isClass, onEdit, onDelete, currentYear, curre
 }
 
 export default function CalendarPage() {
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -280,7 +282,7 @@ const handleDeleteEvent = (id) => {
     try {
       const payload = { ...formData, isClass: false };
       if (!payload.title || !payload.date) {
-        alert("Title and Date are required.");
+        addToast("Failed", "Title and Date are required.", "error");
         return;
       }
 
@@ -288,6 +290,7 @@ const handleDeleteEvent = (id) => {
         await calendarEventService.updateEvent(editingEventId, payload);
       } else {
         await calendarEventService.createEvent(payload);
+      addToast("Success", "Event added successfully", "success");
       }
       setIsModalOpen(false);
       fetchEvents();
