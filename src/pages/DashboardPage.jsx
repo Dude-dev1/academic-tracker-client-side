@@ -3,44 +3,14 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
-const assignments = [
-  {
-    title: "Trial Balance 2",
-    course: "Financial Accounting",
-    date: "Feb 5, 2026",
-    submitted: 28,
-    total: 35,
-    rate: 80,
-  },
-  {
-    title: "Lab Report 3",
-    course: "Data Structure",
-    date: "Feb 4, 2026",
-    submitted: 22,
-    total: 35,
-    rate: 63,
-  },
-  {
-    title: "Project Phase 1",
-    course: "Database Systems",
-    date: "Feb 6, 2026",
-    submitted: 15,
-    total: 35,
-    rate: 43,
-  },
-  {
-    title: "Proposal",
-    course: "Web Technologies",
-    date: "Feb 7, 2026",
-    submitted: 30,
-    total: 35,
-    rate: 86,
-  },
-];
+import assignmentService from "../services/assignmentService";
+import { getCourses } from "../services/courseService";
+import { useEffect } from "react";
+// const dummyAssignments = [];
 
-const statusColor = (rate) => {
-  if (rate >= 75) return "#10b981";
-  if (rate >= 50) return "#f59e0b";
+const statusColor = (pts) => {
+  if (pts >= 75) return "#10b981";
+  if (pts >= 50) return "#f59e0b";
   return "#ef4444";
 };
 
@@ -144,7 +114,21 @@ function PersonalOnboarding({ firstName, setIsModalOpen }) {
   );
 }
 
-function PersonalView({ firstName, setIsModalOpen, navigate }) {
+function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], courses = [] }) {
+  const dueToday = assignments.filter(a => {
+    if (!a.dueDate) return false;
+    const today = new Date();
+    const due = new Date(a.dueDate);
+    return due.getDate() === today.getDate() && due.getMonth() === today.getMonth() && due.getFullYear() === today.getFullYear() && a.status !== "completed";
+  }).length;
+  
+  const overdue = assignments.filter(a => {
+    if (!a.dueDate) return false;
+    return new Date(a.dueDate) < new Date() && a.status !== "completed";
+  }).length;
+  
+  const completed = assignments.filter(a => a.status === "completed").length;
+
   return (
     <>
       <div style={styles.welcomeBlock}>
@@ -157,7 +141,7 @@ function PersonalView({ firstName, setIsModalOpen, navigate }) {
         {[
           {
             label: "Due today",
-            value: "0",
+            value: dueToday.toString(),
             color: "#f59e0b",
             icon: (
               <svg
@@ -175,7 +159,7 @@ function PersonalView({ firstName, setIsModalOpen, navigate }) {
           },
           {
             label: "Overdue",
-            value: "1",
+            value: overdue.toString(),
             color: "#ef4444",
             icon: (
               <svg
@@ -194,7 +178,7 @@ function PersonalView({ firstName, setIsModalOpen, navigate }) {
           },
           {
             label: "Completed",
-            value: "1",
+            value: completed.toString(),
             color: "#10b981",
             icon: (
               <svg
@@ -278,15 +262,15 @@ function PersonalView({ firstName, setIsModalOpen, navigate }) {
               </a>
             </div>
             {assignments.slice(0, 3).map((a, i) => {
-              const isOverdue = a.rate < 50;
+              const isOverdue = a.dueDate ? new Date(a.dueDate) < new Date() && a.status !== "completed" : false;
               return (
                 <div key={i} style={styles.upcomingItem}>
                   <div>
                     <p style={styles.upcomingTitle}>{a.title}</p>
-                    <p style={styles.upcomingCourse}>{a.course}</p>
+                    <p style={styles.upcomingCourse}>{a.courseId?.name || "General"}</p>
                   </div>
                   <div style={styles.upcomingRight}>
-                    <p style={styles.upcomingDate}>{a.date.slice(0, 6)}</p>
+                    <p style={styles.upcomingDate}>{a.dueDate ? new Date(a.dueDate).toLocaleDateString() : "No date"}</p>
                     <span
                       style={{
                         ...styles.statusPill,
@@ -321,7 +305,8 @@ function PersonalView({ firstName, setIsModalOpen, navigate }) {
             <div style={{ height: "16px" }} />
             {[
               { label: "Total Assignments", value: "4" },
-              { label: "Completed", value: "1" },
+              { label: "Completed",
+            value: completed.toString() },
               { label: "In progress", value: "2" },
             ].map(({ label, value }) => (
               <div key={label} style={styles.statRow}>
@@ -462,7 +447,7 @@ function ClassOnboarding() {
   );
 }
 
-function ClassView() {
+function ClassView({ assignments = [], courses = [], navigate }) {
   return (
     <>
       <div style={styles.noteCard}>
@@ -502,7 +487,7 @@ function ClassView() {
             >
               <div>
                 <p style={styles.assignmentTitle}>{a.title}</p>
-                <p style={styles.assignmentCourse}>{a.course}</p>
+                <p style={styles.assignmentCourse}>{a.courseId?.name || "Personal"}</p>
               </div>
               <div style={styles.assignmentRight}>
                 <div style={styles.dateTag}>
@@ -530,13 +515,13 @@ function ClassView() {
                   <div
                     style={{
                       ...styles.progressBar,
-                      width: `${a.rate}%`,
-                      background: statusColor(a.rate),
+                      width: `${a.points || 100}%`,
+                      background: statusColor(a.points || 100),
                     }}
                   />
                 </div>
                 <p style={styles.progressLabel}>
-                  assignment completion rate {a.rate}%
+                  assignment completion rate {a.points || 100}%
                 </p>
               </div>
             </div>
@@ -564,18 +549,18 @@ function ClassView() {
           {assignments.map((a, i) => (
             <div key={i} style={styles.deadlineItem}>
               <div>
-                <p style={styles.deadlineDate}>{a.date}</p>
+                <p style={styles.deadlineDate}>{a.dueDate ? new Date(a.dueDate).toLocaleDateString() : "No deadline"}</p>
                 <p style={styles.deadlineTitle}>{a.title}</p>
-                <p style={styles.deadlineCourse}>{a.course}</p>
+                <p style={styles.deadlineCourse}>{a.courseId?.name || "General"}</p>
               </div>
               <div
                 style={{
                   ...styles.rateBadge,
-                  background: statusColor(a.rate) + "20",
-                  color: statusColor(a.rate),
+                  background: statusColor(a.points || 100) + "20",
+                  color: statusColor(a.points || 100),
                 }}
               >
-                {a.rate}%
+                {a.points || 100} pts
               </div>
             </div>
           ))}
@@ -613,6 +598,28 @@ function ClassView() {
 }
 
 export default function DashboardPage() {
+  const [courses, setCourses] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [courseRes, assignRes] = await Promise.all([
+          getCourses(),
+          assignmentService.getAssignments(),
+        ]);
+        if (courseRes?.data) setCourses(courseRes.data);
+        if (assignRes?.data) setAssignments(assignRes.data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -700,7 +707,7 @@ export default function DashboardPage() {
           ) : isFirstTimeUser ? (
             <ClassOnboarding />
           ) : (
-            <ClassView />
+            <ClassView assignments={assignments} courses={courses} navigate={navigate} />
           )}
         </main>
       </div>

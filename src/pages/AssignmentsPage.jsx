@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
 import assignmentService from "../services/assignmentService";
@@ -16,7 +15,13 @@ function statusLabel(status) {
   return status === "overdue" ? "overdue soon" : status;
 }
 
-function ActionDropdown({ onClose, onDelete }) {
+function groupStyle(group) {
+  if (group === "Group 1") return { background: "#F3E8FF", color: "#6D28D9" }; // purple
+  if (group === "Group 2") return { background: "#FEF3C7", color: "#B45309" }; // yellow/orange
+  return { background: "#DBEAFE", color: "#1D4ED8" }; // light blue for "All"
+}
+
+function ActionDropdown({ onClose, onDelete, onEdit }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -30,25 +35,6 @@ function ActionDropdown({ onClose, onDelete }) {
   return (
     <div ref={ref} style={styles.dropdown}>
       {[
-        {
-          label: "View Submission",
-          icon: (
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          ),
-          onClick: () => {
-            onClose();
-          },
-        },
         {
           label: "Edit",
           icon: (
@@ -65,6 +51,7 @@ function ActionDropdown({ onClose, onDelete }) {
             </svg>
           ),
           onClick: () => {
+            if (onEdit) onEdit();
             onClose();
           },
         },
@@ -104,7 +91,7 @@ function ActionDropdown({ onClose, onDelete }) {
   );
 }
 
-function AssignmentRow({ row, onDelete }) {
+function AssignmentRow({ row, onDelete, onEdit }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -117,7 +104,13 @@ function AssignmentRow({ row, onDelete }) {
           year: "numeric",
         })}
       </td>
-      <td style={styles.subCell}>{row.group || "All"}</td>
+      <td style={styles.subCell}>
+        <span
+          style={{ ...styles.statusPill, ...groupStyle(row.group || "All") }}
+        >
+          {row.group || "All"}
+        </span>
+      </td>
       <td>
         <span style={{ ...styles.statusPill, ...statusStyle(row.status) }}>
           {statusLabel(row.status)}
@@ -131,6 +124,7 @@ function AssignmentRow({ row, onDelete }) {
           <ActionDropdown
             onClose={() => setOpen(false)}
             onDelete={() => onDelete(row._id)}
+            onEdit={() => onEdit(row)}
           />
         )}
       </td>
@@ -142,6 +136,7 @@ export default function AssignmentsPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("dueDate");
 
   // Data states
   const [assignments, setAssignments] = useState([]);
@@ -150,6 +145,7 @@ export default function AssignmentsPage() {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newTitle, setNewTitle] = useState("");
   const [newDueDate, setNewDueDate] = useState("");
   const [newCourseId, setNewCourseId] = useState("");
@@ -158,13 +154,24 @@ export default function AssignmentsPage() {
   const { user } = useAuth();
   const isClass = activeTab === "Class";
 
-  const displayData = assignments.filter((a) => {
-    const matchesTab = isClass ? a.courseId : !a.courseId;
-    const matchesSearch = a.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
+  const displayData = assignments
+    .filter((a) => {
+      const matchesTab = isClass ? a.courseId : !a.courseId;
+      const matchesSearch = a.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesTab && matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === "dueDate") {
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      } else if (sortBy === "group") {
+        const groupA = a.group || "All";
+        const groupB = b.group || "All";
+        return groupA.localeCompare(groupB);
+      }
+      return 0;
+    });
 
   const firstName =
     user?.displayName?.split(" ")[0] ||
@@ -172,8 +179,6 @@ export default function AssignmentsPage() {
     user?.email?.split("@")[0] ||
     "there";
   const initials = firstName.slice(0, 2).toUpperCase();
-
-  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
@@ -194,7 +199,7 @@ export default function AssignmentsPage() {
     fetchData();
   }, []);
 
-  const handleCreate = async () => {
+  const handleSave = async () => {
     if (!newTitle || !newDueDate) return;
     try {
       const payload = {
@@ -206,7 +211,11 @@ export default function AssignmentsPage() {
         payload.courseId = newCourseId;
       }
 
-      await assignmentService.createAssignment(payload);
+      if (editingId) {
+        await assignmentService.updateAssignment(editingId, payload);
+      } else {
+        await assignmentService.createAssignment(payload);
+      }
       setIsModalOpen(false);
 
       // Reset
@@ -214,13 +223,34 @@ export default function AssignmentsPage() {
       setNewDueDate("");
       setNewCourseId("");
       setNewGroup("All");
+      setEditingId(null);
 
       // Refresh
       fetchData();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to create assignment");
+      alert(
+        err.response?.data?.message ||
+          `Failed to ${editingId ? "update" : "create"} assignment`
+      );
     }
+  };
+
+  const openEditModal = (a) => {
+    setEditingId(a._id);
+    setNewTitle(a.title);
+    setNewDueDate(
+      a.dueDate
+        ? ((d) =>
+            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+              2,
+              "0"
+            )}-${String(d.getDate()).padStart(2, "0")}`)(new Date(a.dueDate))
+        : ""
+    );
+    setNewCourseId(a.courseId?._id || a.courseId || "");
+    setNewGroup(a.group || "All");
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -340,7 +370,14 @@ export default function AssignmentsPage() {
           {/* Filters */}
           <div style={styles.filters}>
             <button style={styles.filterPillBlue}>All Assignments</button>
-            <button style={styles.filterPillPurple}>Sort : Due Date</button>
+            <button
+              style={styles.filterPillPurple}
+              onClick={() =>
+                setSortBy((prev) => (prev === "dueDate" ? "group" : "dueDate"))
+              }
+            >
+              Sort : {sortBy === "dueDate" ? "Due Date" : "Group"}
+            </button>
             <div style={styles.searchBox}>
               <svg
                 width="13"
@@ -415,6 +452,7 @@ export default function AssignmentsPage() {
                       key={row._id || i}
                       row={row}
                       onDelete={handleDelete}
+                      onEdit={openEditModal}
                     />
                   ))
                 )}
@@ -426,8 +464,15 @@ export default function AssignmentsPage() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Create Assignment"
+        onClose={() => {
+          setIsModalOpen(false);
+          setNewTitle("");
+          setNewDueDate("");
+          setNewCourseId("");
+          setNewGroup("All");
+          setEditingId(null);
+        }}
+        title={editingId ? "Edit Assignment" : "Create Assignment"}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <div>
@@ -536,7 +581,7 @@ export default function AssignmentsPage() {
             </select>
           </div>
           <button
-            onClick={handleCreate}
+            onClick={handleSave}
             style={{
               marginTop: "16px",
               padding: "10px",
@@ -713,7 +758,7 @@ const styles = {
     background: "#fff",
     borderRadius: "16px",
     border: "0.5px solid #E5E7EB",
-    overflow: "hidden",
+    overflow: "visible",
     boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
   },
   table: { width: "100%", borderCollapse: "collapse" },
