@@ -500,7 +500,8 @@ const styles = {
   socialBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
+    justifyContent: "center",
+    gap: "8px",
     padding: "0 16px",
     height: "44px",
     border: "1.5px solid #E5E7EB",
@@ -512,7 +513,7 @@ const styles = {
     color: "#374151",
     fontFamily: "'DM Sans', sans-serif",
   },
-  socialLabel: { flex: 1, textAlign: "center" },
+  socialLabel: { textAlign: "center" },
   footer: {
     marginTop: "20px",
     textAlign: "center",

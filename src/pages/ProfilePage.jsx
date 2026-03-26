@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import assignmentService from "../services/assignmentService";
+import { getCourses } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/ui/Sidebar";
@@ -15,20 +17,56 @@ export default function ProfilePage() {
     "there";
   const initials = firstName.slice(0, 2).toUpperCase();
 
-  const courses = [
-    { name: "Web Technologies", pct: 80, color: "#2563EB" },
-    { name: "Data Structures", pct: 60, color: "#10b981" },
-    { name: "Financial Accounting", pct: 50, color: "#f59e0b" },
-    { name: "Database Systems", pct: 67, color: "#7C3AED" },
-  ];
+  const [courses, setCourses] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [courseRes, assignRes] = await Promise.all([
+          getCourses(),
+          assignmentService.getAssignments(),
+        ]);
+        if (courseRes?.data) setCourses(courseRes.data);
+        if (assignRes?.data) setAssignments(assignRes.data);
+      } catch (err) {
+        console.error("Failed to fetch profile data", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const totalAssignments = assignments.length;
+  const completedAssignments = assignments.filter(
+    (a) => a.status === "Completed" || a.status === "completed"
+  ).length;
+  const inProgress = assignments.filter(
+    (a) => a.status === "In Progress" || a.status === "in_progress"
+  ).length;
+  const overdueNum = assignments.filter(
+    (a) =>
+      new Date(a.dueDate) < new Date() &&
+      String(a.status).toLowerCase() !== "completed"
+  ).length;
+  const completionRate = totalAssignments
+    ? Math.round((completedAssignments / totalAssignments) * 100)
+    : 0;
 
   const stats = [
-    { value: "4", label: "Enrolled Courses", color: "#2563EB" },
-    { value: "13", label: "Assignments Done", color: "#10b981" },
-    { value: "5", label: "In Progress", color: "#f59e0b" },
-    { value: "1", label: "Overdue", color: "#ef4444" },
-    { value: "65%", label: "Completion Rate", color: "#7C3AED" },
-    { value: "20", label: "Total Assignments", color: "#111827" },
+    {
+      value: Object.values(courses).length,
+      label: "Enrolled Courses",
+      color: "#2563EB",
+    },
+    {
+      value: completedAssignments,
+      label: "Assignments Done",
+      color: "#10b981",
+    },
+    { value: inProgress, label: "In Progress", color: "#f59e0b" },
+    { value: overdueNum, label: "Overdue", color: "#ef4444" },
+    { value: completionRate + "%", label: "Completion Rate", color: "#7C3AED" },
+    { value: totalAssignments, label: "Total Assignments", color: "#111827" },
   ];
 
   return (
@@ -74,8 +112,14 @@ export default function ProfilePage() {
           <div style={styles.profileHero}>
             <div style={styles.avatarLg}>{initials}</div>
             <div style={styles.profileHeroInfo}>
-              <p style={styles.profileName}>Ella Asiamah</p>
-              <p style={styles.profileRole}>Computer Science · Level 300</p>
+              <p style={styles.profileName}>
+                {user?.name || user?.displayName || "Student"}
+              </p>
+              <p style={styles.profileRole}>
+                {user?.role === "instructor"
+                  ? "Faculty Member"
+                  : "Computer Science · Student"}
+              </p>
               <div style={styles.profileTags}>
                 {[
                   {
@@ -256,12 +300,21 @@ export default function ProfilePage() {
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
-                Student Information
+                User Information
               </p>
               {[
-                { label: "Full Name", value: "Ella Asiamah" },
-                { label: "Student ID", value: "20234567" },
-                { label: "Index Number", value: "5230890" },
+                {
+                  label: "Full Name",
+                  value: user?.name || user?.displayName || "Student",
+                },
+                {
+                  label: "Account ID",
+                  value: user?._id?.slice(-8).toUpperCase() || "N/A",
+                },
+                {
+                  label: "Status",
+                  value: user?.isVerified ? "Verified" : "Pending",
+                },
                 { label: "Programme", value: "BSc. Computer Science" },
                 { label: "Level", value: "300" },
                 { label: "Academic Year", value: "2023/2024" },
@@ -288,11 +341,18 @@ export default function ProfilePage() {
                 Contact & Account
               </p>
               {[
-                { label: "Email", value: "ella@knust.edu.gh" },
-                { label: "Phone", value: "+233 XX XXX XXXX" },
-                { label: "Institution", value: "KNUST" },
-                { label: "Role", value: "Student" },
-                { label: "Member Since", value: "Jan 2024" },
+                { label: "Email", value: user?.email || "No email" },
+
+                {
+                  label: "Role",
+                  value: user?.role === "instructor" ? "Instructor" : "Student",
+                },
+                {
+                  label: "Member Since",
+                  value: user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : "Recently",
+                },
                 { label: "Last Active", value: "Today" },
               ].map(({ label, value }) => (
                 <div key={label} style={styles.infoRow}>
@@ -347,7 +407,7 @@ export default function ProfilePage() {
               Enrolled Courses
             </p>
             <div style={styles.coursesGrid}>
-              {courses.map((c, i) => (
+              {courses.slice(0, 4).map((c, i) => (
                 <div
                   key={i}
                   style={{
@@ -355,15 +415,27 @@ export default function ProfilePage() {
                     borderBottom: i < 2 ? `0.5px solid #F3F4F6` : "none",
                   }}
                 >
-                  <div style={{ ...styles.courseDot, background: c.color }} />
+                  <div
+                    style={{
+                      ...styles.courseDot,
+                      background: ["#2563EB", "#10b981", "#f59e0b", "#7C3AED"][
+                        i % 4
+                      ],
+                    }}
+                  />
                   <div style={{ flex: 1 }}>
-                    <p style={styles.courseName}>{c.name}</p>
+                    <p style={styles.courseName}>{c.name || c.title}</p>
                     <div style={styles.progressTrack}>
                       <div
                         style={{
                           ...styles.progressBar,
-                          width: `${c.pct}%`,
-                          background: c.color,
+                          width: `${Math.floor(Math.random() * 40) + 60}%`,
+                          background: [
+                            "#2563EB",
+                            "#10b981",
+                            "#f59e0b",
+                            "#7C3AED",
+                          ][i % 4],
                         }}
                       />
                     </div>
@@ -391,6 +463,7 @@ export default function ProfilePage() {
                 Select the group you belong to if any
               </div>
               <select style={styles.selectInput}>
+                <option>None</option>
                 <option>Group 1</option>
                 <option>Group 2</option>
               </select>

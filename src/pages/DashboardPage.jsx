@@ -148,7 +148,9 @@ function PersonalView({ firstName, setIsModalOpen, navigate }) {
   return (
     <>
       <div style={styles.welcomeBlock}>
-        <h1 style={styles.welcomeTitle}>Welcome back, {firstName}</h1>
+        <h1 style={styles.welcomeTitle}>
+          Welcome back, <span style={styles.welcomeName}>{firstName}</span>
+        </h1>
         <p style={styles.welcomeSub}>Here's what you're working on today</p>
       </div>
       <div style={styles.statsRow}>
@@ -923,6 +925,7 @@ const styles = {
     color: "#111827",
     letterSpacing: "-0.5px",
   },
+  welcomeName: { color: "#2563EB" },
   welcomeSub: { fontSize: "13px", color: "#6B7280", marginTop: "4px" },
   onboardingGrid: {
     display: "grid",

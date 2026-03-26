@@ -3,47 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
-const personalData = [
-  {
-    title: "Web Tech Assignment",
-    dueDate: "March 15, 2026",
-    submissions: "1/1",
-    status: "open",
-  },
-  {
-    title: "Data Structures Lab",
-    dueDate: "March 5, 2026",
-    submissions: "1/1",
-    status: "closed",
-  },
-  {
-    title: "Accounting Quiz",
-    dueDate: "March 6, 2026",
-    submissions: "0/1",
-    status: "overdue",
-  },
-];
-
-const classData = [
-  {
-    title: "Project Proposal",
-    dueDate: "March 15, 2026",
-    submissions: "12/18",
-    status: "open",
-  },
-  {
-    title: "Lab Report",
-    dueDate: "March 5, 2026",
-    submissions: "18/18",
-    status: "closed",
-  },
-  {
-    title: "Trial Balance 3",
-    dueDate: "March 6, 2026",
-    submissions: "18/18",
-    status: "overdue",
-  },
-];
+import assignmentService from "../services/assignmentService";
+import * as courseService from "../services/courseService";
 
 function statusStyle(status) {
   if (status === "open") return { background: "#D1FAE5", color: "#065F46" };
@@ -55,7 +16,7 @@ function statusLabel(status) {
   return status === "overdue" ? "overdue soon" : status;
 }
 
-function ActionDropdown({ onClose }) {
+function ActionDropdown({ onClose, onDelete }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -84,6 +45,9 @@ function ActionDropdown({ onClose }) {
               <circle cx="12" cy="12" r="3" />
             </svg>
           ),
+          onClick: () => {
+            onClose();
+          },
         },
         {
           label: "Edit",
@@ -100,22 +64,9 @@ function ActionDropdown({ onClose }) {
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           ),
-        },
-        {
-          label: "Duplicate",
-          icon: (
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" />
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-            </svg>
-          ),
+          onClick: () => {
+            onClose();
+          },
         },
         {
           label: "Delete",
@@ -134,10 +85,15 @@ function ActionDropdown({ onClose }) {
             </svg>
           ),
           red: true,
+          onClick: () => {
+            onDelete();
+            onClose();
+          },
         },
-      ].map(({ label, icon, red }) => (
+      ].map(({ label, icon, red, onClick }) => (
         <button
           key={label}
+          onClick={onClick}
           style={{ ...styles.dropdownItem, color: red ? "#ef4444" : undefined }}
         >
           {icon}
@@ -148,14 +104,20 @@ function ActionDropdown({ onClose }) {
   );
 }
 
-function AssignmentRow({ row }) {
+function AssignmentRow({ row, onDelete }) {
   const [open, setOpen] = useState(false);
 
   return (
     <tr style={styles.row}>
       <td style={styles.titleCell}>{row.title}</td>
-      <td style={styles.dateCell}>{row.dueDate}</td>
-      <td style={styles.subCell}>{row.submissions}</td>
+      <td style={styles.dateCell}>
+        {new Date(row.dueDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </td>
+      <td style={styles.subCell}>{row.group || "All"}</td>
       <td>
         <span style={{ ...styles.statusPill, ...statusStyle(row.status) }}>
           {statusLabel(row.status)}
@@ -165,7 +127,12 @@ function AssignmentRow({ row }) {
         <button onClick={() => setOpen((v) => !v)} style={styles.actionBtn}>
           •••
         </button>
-        {open && <ActionDropdown onClose={() => setOpen(false)} />}
+        {open && (
+          <ActionDropdown
+            onClose={() => setOpen(false)}
+            onDelete={() => onDelete(row._id)}
+          />
+        )}
       </td>
     </tr>
   );
@@ -174,11 +141,30 @@ function AssignmentRow({ row }) {
 export default function AssignmentsPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
 
+  // Data states
+  const [assignments, setAssignments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [newCourseId, setNewCourseId] = useState("");
+  const [newGroup, setNewGroup] = useState("All");
+
+  const { user } = useAuth();
   const isClass = activeTab === "Class";
-  const data = isClass ? classData : personalData;
+
+  const displayData = assignments.filter((a) => {
+    const matchesTab = isClass ? a.courseId : !a.courseId;
+    const matchesSearch = a.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   const firstName =
     user?.displayName?.split(" ")[0] ||
@@ -188,7 +174,66 @@ export default function AssignmentsPage() {
   const initials = firstName.slice(0, 2).toUpperCase();
 
   const navigate = useNavigate();
-  const location = useLocation();
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const assignRes = await assignmentService.getAssignments();
+      setAssignments(assignRes.data || []);
+
+      const courseRes = await courseService.getCourses();
+      setCourses(courseRes.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleCreate = async () => {
+    if (!newTitle || !newDueDate) return;
+    try {
+      const payload = {
+        title: newTitle,
+        dueDate: newDueDate,
+        group: newGroup,
+      };
+      if (newCourseId) {
+        payload.courseId = newCourseId;
+      }
+
+      await assignmentService.createAssignment(payload);
+      setIsModalOpen(false);
+
+      // Reset
+      setNewTitle("");
+      setNewDueDate("");
+      setNewCourseId("");
+      setNewGroup("All");
+
+      // Refresh
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to create assignment");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this assignment?"))
+      return;
+    try {
+      await assignmentService.deleteAssignment(id);
+      fetchData();
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert(err.response?.data?.message || "Delete failed");
+    }
+  };
 
   return (
     <div style={styles.root}>
@@ -308,9 +353,20 @@ export default function AssignmentsPage() {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <span style={{ fontSize: "12px", color: "#9CA3AF" }}>
-                Search assignment
-              </span>
+              <input
+                type="text"
+                placeholder="Search assignment"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  border: "none",
+                  outline: "none",
+                  fontSize: "12px",
+                  color: "#374151",
+                  width: "120px",
+                  background: "transparent",
+                }}
+              />
             </div>
           </div>
 
@@ -321,15 +377,47 @@ export default function AssignmentsPage() {
                 <tr style={styles.thead}>
                   <th style={styles.th}>Title</th>
                   <th style={styles.th}>Due Date</th>
-                  <th style={styles.th}>Submissions</th>
+                  <th style={styles.th}>Group</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {data.map((row, i) => (
-                  <AssignmentRow key={i} row={row} />
-                ))}
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      style={{
+                        padding: "20px",
+                        textAlign: "center",
+                        color: "#6B7280",
+                      }}
+                    >
+                      Loading assignments...
+                    </td>
+                  </tr>
+                ) : displayData.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      style={{
+                        padding: "20px",
+                        textAlign: "center",
+                        color: "#6B7280",
+                      }}
+                    >
+                      No {activeTab.toLowerCase()} assignments found.
+                    </td>
+                  </tr>
+                ) : (
+                  displayData.map((row, i) => (
+                    <AssignmentRow
+                      key={row._id || i}
+                      row={row}
+                      onDelete={handleDelete}
+                    />
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -356,6 +444,8 @@ export default function AssignmentsPage() {
             <input
               type="text"
               placeholder="Enter assignment title"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -377,6 +467,8 @@ export default function AssignmentsPage() {
             </label>
             <input
               type="date"
+              value={newDueDate}
+              onChange={(e) => setNewDueDate(e.target.value)}
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -385,6 +477,8 @@ export default function AssignmentsPage() {
               }}
             />
           </div>
+
+          {/* Only show Course selection for Class tab or maybe always, let user pick */}
           <div>
             <label
               style={{
@@ -394,9 +488,11 @@ export default function AssignmentsPage() {
                 marginBottom: "4px",
               }}
             >
-              Course
+              Course (Optional)
             </label>
             <select
+              value={newCourseId}
+              onChange={(e) => setNewCourseId(e.target.value)}
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -404,12 +500,43 @@ export default function AssignmentsPage() {
                 border: "1px solid #D1D5DB",
               }}
             >
-              <option>Select a course</option>
-              <option>Web Tech</option>
-              <option>Data Structures</option>
+              <option value="">Personal Assignment (No Course)</option>
+              {courses.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: "13px",
+                fontWeight: "500",
+                marginBottom: "4px",
+              }}
+            >
+              Group
+            </label>
+            <select
+              value={newGroup}
+              onChange={(e) => setNewGroup(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                border: "1px solid #D1D5DB",
+              }}
+            >
+              <option value="All">All</option>
+              <option value="Group 1">Group 1</option>
+              <option value="Group 2">Group 2</option>
             </select>
           </div>
           <button
+            onClick={handleCreate}
             style={{
               marginTop: "16px",
               padding: "10px",
@@ -420,7 +547,6 @@ export default function AssignmentsPage() {
               fontWeight: "500",
               cursor: "pointer",
             }}
-            onClick={() => setIsModalOpen(false)}
           >
             Save Assignment
           </button>
@@ -437,56 +563,6 @@ const styles = {
     background: "#F0F4FF",
     fontFamily: "'DM Sans', sans-serif",
   },
-  sidebar: {
-    background: "#fff",
-    borderRight: "1px solid #E5E7EB",
-    display: "flex",
-    flexDirection: "column",
-    transition: "width 0.25s ease",
-    overflow: "hidden",
-    flexShrink: 0,
-    position: "sticky",
-    top: 0,
-    height: "100vh",
-  },
-  sidebarLogo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "18px 16px",
-    borderBottom: "1px solid #E5E7EB",
-    whiteSpace: "nowrap",
-  },
-  sidebarLogoName: {
-    fontFamily: "'Fraunces', serif",
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#2563EB",
-    letterSpacing: "-0.3px",
-  },
-  navItems: {
-    display: "flex",
-    flexDirection: "column",
-    padding: "12px 0",
-    flex: 1,
-  },
-  navItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "10px 16px",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "500",
-    fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-    whiteSpace: "nowrap",
-    width: "100%",
-    textAlign: "left",
-  },
-  navLabel: { fontSize: "13px" },
-  sidebarBottom: { borderTop: "1px solid #E5E7EB", padding: "12px 0" },
   content: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
   topNav: {
     display: "flex",
@@ -679,38 +755,35 @@ const styles = {
   actionBtn: {
     background: "none",
     border: "none",
-    cursor: "pointer",
-    padding: "4px 6px",
-    borderRadius: "6px",
-    color: "#9CA3AF",
     fontSize: "16px",
-    letterSpacing: "2px",
+    color: "#9CA3AF",
+    cursor: "pointer",
   },
   dropdown: {
     position: "absolute",
     right: 0,
-    top: "28px",
+    top: "100%",
     background: "#fff",
-    border: "0.5px solid #E5E7EB",
-    borderRadius: "12px",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-    padding: "6px",
+    border: "1px solid #E5E7EB",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
     zIndex: 50,
+    padding: "4px",
     minWidth: "160px",
   },
   dropdownItem: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    padding: "8px 10px",
-    borderRadius: "6px",
-    fontSize: "12px",
-    color: "#374151",
-    cursor: "pointer",
+    width: "100%",
+    padding: "8px 12px",
     border: "none",
     background: "none",
-    fontFamily: "'DM Sans', sans-serif",
-    width: "100%",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#374151",
+    cursor: "pointer",
+    borderRadius: "4px",
     textAlign: "left",
   },
 };

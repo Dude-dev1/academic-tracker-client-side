@@ -1,69 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
-const personalEvents = {
-  5: {
-    title: "Assignment Due",
-    color: "#ef4444",
-    time: "11:59 pm",
-    location: "Online submission",
-    desc: "Submit Financial Accounting trial balance assignment.",
-  },
-  12: {
-    title: "Study Group",
-    color: "#2563EB",
-    time: "3:00 pm - 5:00 pm",
-    location: "Library, KNUST",
-    desc: "Group study session for Data Structures midterm.",
-  },
-  22: {
-    title: "Deadline",
-    color: "#f59e0b",
-    time: "11:59 pm",
-    location: "Online submission",
-    desc: "Web Technologies project phase 2 submission deadline.",
-  },
-  28: {
-    title: "Exam Prep",
-    color: "#7C3AED",
-    time: "9:00 am - 12:00 pm",
-    location: "Room 204, KNUST",
-    desc: "Personal exam preparation session with study materials.",
-  },
-};
-
-const classEvents = {
-  7: {
-    title: "Presentation",
-    color: "#10b981",
-    time: "10:00 am - 12:00 pm",
-    location: "Lecture Hall A, KNUST",
-    desc: "End of semester presentation for Web Technologies course.",
-  },
-  18: {
-    title: "Workshop",
-    color: "#2563EB",
-    time: "2:00 pm - 4:00 pm",
-    location: "Great Hall, KNUST",
-    desc: "Hands on workshop about web Development. Be prepared for an interactive learning session.",
-  },
-  24: {
-    title: "Field Trip",
-    color: "#f59e0b",
-    time: "8:00 am - 5:00 pm",
-    location: "Accra, Ghana",
-    desc: "Industry visit to tech companies in Accra.",
-  },
-  30: {
-    title: "Class Test",
-    color: "#ef4444",
-    time: "9:00 am - 10:00 am",
-    location: "Exam Hall, KNUST",
-    desc: "Mid-semester class test covering weeks 1-6.",
-  },
-};
+import { calendarEventService } from "../services/calendarEventService";
 
 const DAY_NAMES = [
   "Sunday",
@@ -75,14 +15,29 @@ const DAY_NAMES = [
   "Saturday",
 ];
 const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const TOTAL_DAYS = 31;
-const TODAY = 22;
 
-function CalendarGrid({ eventsMap, onSelectEvent }) {
+const STATUS_COLORS = {
+  Urgent: "#ef4444",
+  Important: "#f59e0b",
+  Normal: "#2563EB",
+  Completed: "#10b981",
+  Prep: "#7C3AED",
+};
+
+const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+
+function CalendarGrid({ eventsMap, onSelectEvent, currentDay, currentMonth, currentYear }) {
   const cells = [];
+  const totalDays = getDaysInMonth(currentYear, currentMonth);
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
 
-  for (let d = 1; d <= TOTAL_DAYS; d++) {
-    const isToday = d === TODAY;
+  for (let i = 0; i < firstDay; i++) {
+    cells.push(<td key={`empty-start-${i}`} style={styles.emptyCell} />);
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const todayObj = new Date();
+    const isToday = d === todayObj.getDate() && todayObj.getMonth() === currentMonth && todayObj.getFullYear() === currentYear;
     const ev = eventsMap[d];
     cells.push(
       <td
@@ -96,7 +51,7 @@ function CalendarGrid({ eventsMap, onSelectEvent }) {
       >
         <div style={isToday ? styles.todayNum : styles.dayNum}>{d}</div>
         {ev && (
-          <div style={{ ...styles.eventPill, background: ev.color }}>
+          <div style={{ ...styles.eventPill, background: STATUS_COLORS[ev.status] || ev.color }}>
             {ev.title}
           </div>
         )}
@@ -104,9 +59,8 @@ function CalendarGrid({ eventsMap, onSelectEvent }) {
     );
   }
 
-  // pad end
   while (cells.length % 7 !== 0) {
-    cells.push(<td key={`empty-${cells.length}`} style={styles.emptyCell} />);
+    cells.push(<td key={`empty-end-${cells.length}`} style={styles.emptyCell} />);
   }
 
   const rows = [];
@@ -130,62 +84,53 @@ function CalendarGrid({ eventsMap, onSelectEvent }) {
   );
 }
 
-function DetailPanel({ event, day, isClass }) {
+function DetailPanel({ event, day, isClass, onEdit, onDelete, currentYear, currentMonth }) {
   if (!event) return null;
-  const date = new Date(2026, 2, day);
-  const suffix = day === 1 ? "st" : day === 2 ? "nd" : day === 3 ? "rd" : "th";
+  const date = event.date ? new Date(event.date) : new Date(currentYear, currentMonth, day);
+  const suffix = day === 1 || day === 21 || day === 31 ? "st" : day === 2 || day === 22 ? "nd" : day === 3 || day === 23 ? "rd" : "th";
 
   return (
     <div style={styles.detailPanel}>
-      <p style={styles.detailTitle}>{event.title}</p>
-      <div style={styles.detailRow}>
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#9CA3AF"
-          strokeWidth="2"
-        >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <p style={{ ...styles.detailTitle, color: STATUS_COLORS[event.status] || event.color, margin: 0 }}>{event.title}</p>
+        <span style={{ fontSize: '11px', fontWeight: '600', color: STATUS_COLORS[event.status] || event.color, background: (STATUS_COLORS[event.status] || event.color) + "15", padding: '4px 8px', borderRadius: '12px' }}>
+          {event.status || 'Normal'}
+        </span>
+      </div>
+      <div style={{ ...styles.detailRow, marginTop: '12px' }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
           <rect x="3" y="4" width="18" height="18" rx="2" />
           <line x1="16" y1="2" x2="16" y2="6" />
           <line x1="8" y1="2" x2="8" y2="6" />
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
         <span>
-          {DAY_NAMES[date.getDay()]} {day}
-          {suffix} March, 2026
+          {DAY_NAMES[date.getDay()]}, {day}{suffix} {date.toLocaleString('default', { month: 'long' })} {currentYear}
         </span>
       </div>
-      <div style={styles.detailRow}>
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#9CA3AF"
-          strokeWidth="2"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 3" />
-        </svg>
-        <span>{event.time}</span>
-      </div>
-      <div style={styles.detailRow}>
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#9CA3AF"
-          strokeWidth="2"
-        >
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
-        <span>{event.location}</span>
-      </div>
-      <div style={styles.detailDesc}>{event.desc}</div>
+      {(event.time || event.location) && (
+        <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+          {event.time && (
+            <div style={styles.detailRow}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 3" />
+              </svg>
+              <span>{event.time}</span>
+            </div>
+          )}
+          {event.location && (
+            <div style={styles.detailRow}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span>{event.location}</span>
+            </div>
+          )}
+        </div>
+      )}
+      {event.desc && <div style={styles.detailDesc}>{event.desc}</div>}
       <div style={styles.detailActions}>
         {isClass ? (
           <p style={styles.classNotice}>
@@ -193,8 +138,8 @@ function DetailPanel({ event, day, isClass }) {
           </p>
         ) : (
           <>
-            <button style={styles.editBtn}>Edit</button>
-            <button style={styles.deleteBtn}>Delete</button>
+            <button style={styles.editBtn} onClick={() => onEdit(event)}>Edit Event</button>
+            <button style={styles.deleteBtn} onClick={() => onDelete(event._id)}>Delete</button>
           </>
         )}
       </div>
@@ -206,8 +151,26 @@ export default function CalendarPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedDay, setSelectedDay] = useState(null);
+  
+  const todayDate = new Date();
+  const [currentYear, setCurrentYear] = useState(todayDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(todayDate.getMonth()); 
+  
+  const [events, setEvents] = useState([]);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    date: "",
+    time: "",
+    location: "",
+    desc: "",
+    status: "Normal"
+  });
+
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const firstName =
     user?.displayName?.split(" ")[0] ||
@@ -217,11 +180,121 @@ export default function CalendarPage() {
   const initials = firstName.slice(0, 2).toUpperCase();
 
   const isClass = activeTab === "Class";
-  const eventsMap = isClass ? classEvents : personalEvents;
+
+  const fetchEvents = async () => {
+    try {
+      const data = await calendarEventService.getEvents();
+      setEvents(data);
+    } catch (err) {
+      console.error("Failed to fetch events", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const filteredEvents = events.filter((ev) => {
+    const evDate = new Date(ev.date);
+    return (
+      (Boolean(ev.isClass) === isClass) &&
+      evDate.getFullYear() === currentYear &&
+      evDate.getMonth() === currentMonth
+    );
+  });
+
+  const eventsMap = {};
+  filteredEvents.forEach((ev) => {
+    const day = new Date(ev.date).getDate();
+    eventsMap[day] = ev; 
+  });
+
   const selectedEvent = selectedDay ? eventsMap[selectedDay] : null;
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  const handlePrevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+    setSelectedDay(null);
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+    setSelectedDay(null);
+  };
+
+  const openAddModal = () => {
+    setEditingEventId(null);
+    setFormData({
+      title: "",
+      date: "",
+      time: "",
+      location: "",
+      desc: "",
+      status: "Normal"
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (ev) => {
+    setEditingEventId(ev._id);
+    const dateStr = new Date(ev.date).toISOString().split('T')[0];
+    setFormData({
+      title: ev.title || "",
+      date: dateStr,
+      time: ev.time || "",
+      location: ev.location || "",
+      desc: ev.desc || "",
+      status: ev.status || "Normal"
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        await calendarEventService.deleteEvent(id);
+        setSelectedDay(null);
+        fetchEvents();
+      } catch (err) {
+        console.error("Failed to delete event", err);
+      }
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const payload = { ...formData, isClass: false };
+      if (!payload.title || !payload.date) {
+        alert("Title and Date are required.");
+        return;
+      }
+
+      if (editingEventId) {
+        await calendarEventService.updateEvent(editingEventId, payload);
+      } else {
+        await calendarEventService.createEvent(payload);
+      }
+      setIsModalOpen(false);
+      fetchEvents();
+      
+      const d = new Date(payload.date);
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        setSelectedDay(d.getDate() + 1); // fix timezone offset locally, plus we will fetch anyways so user will click to view
+      }
+    } catch (err) {
+      console.error("Failed to save event", err);
+    }
+  };
+
   return (
     <div style={styles.root}>
       <style>{`
@@ -232,23 +305,14 @@ export default function CalendarPage() {
 
       <Sidebar sidebarOpen={sidebarOpen} />
 
-      {/* MAIN CONTENT */}
       <div style={styles.content}>
-        {/* TOP NAV */}
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <button
               onClick={() => setSidebarOpen((v) => !v)}
               style={styles.toggleBtn}
             >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#6B7280"
-                strokeWidth="2"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="18" x2="21" y2="18" />
@@ -279,9 +343,7 @@ export default function CalendarPage() {
           </div>
         </nav>
 
-        {/* PAGE CONTENT */}
         <main style={styles.main}>
-          {/* Calendar Header */}
           <div style={styles.calHeader}>
             <div style={styles.calHeaderLeft}>
               <div
@@ -291,14 +353,7 @@ export default function CalendarPage() {
                   color: isClass ? "#7C3AED" : "#2563EB",
                 }}
               >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
                   <line x1="8" y1="2" x2="8" y2="6" />
@@ -306,40 +361,15 @@ export default function CalendarPage() {
                 </svg>
                 {isClass ? "Class Events" : "My Events"}
               </div>
-              <div style={styles.viewSwitcher}>
-                {["Month", "Week", "Today"].map((v, i) => (
-                  <button
-                    key={v}
-                    style={{
-                      ...styles.viewBtn,
-                      background:
-                        i === 0
-                          ? "var(--color-background-secondary, #F3F4F6)"
-                          : "transparent",
-                      fontWeight: i === 0 ? "500" : "400",
-                      borderRight: i < 2 ? "0.5px solid #E5E7EB" : "none",
-                    }}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
             </div>
             {isClass ? (
-              <span style={styles.readonlyBadge}>View only</span>
+              <span style={styles.readonlyBadge}>View only (Class events are auto-managed)</span>
             ) : (
               <button
                 style={styles.addBtn}
-                onClick={() => setIsModalOpen(true)}
+                onClick={openAddModal}
               >
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
@@ -348,25 +378,31 @@ export default function CalendarPage() {
             )}
           </div>
 
-          {/* Calendar Nav */}
           <div style={styles.calNav}>
-            <button style={styles.calNavBtn}>‹</button>
-            <span style={styles.calMonth}>March 2026</span>
-            <button style={styles.calNavBtn}>›</button>
+            <button style={styles.calNavBtn} onClick={handlePrevMonth}>‹</button>
+            <span style={styles.calMonth}>
+              {new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </span>
+            <button style={styles.calNavBtn} onClick={handleNextMonth}>›</button>
           </div>
 
-          {/* Calendar Grid */}
           <CalendarGrid
             eventsMap={eventsMap}
             onSelectEvent={(d) => setSelectedDay(d === selectedDay ? null : d)}
+            currentDay={todayDate.getDate()}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
           />
 
-          {/* Detail Panel */}
           {selectedEvent && (
             <DetailPanel
               event={selectedEvent}
               day={selectedDay}
               isClass={isClass}
+              onEdit={openEditModal}
+              onDelete={handleDeleteEvent}
+              currentMonth={currentMonth}
+              currentYear={currentYear}
             />
           )}
         </main>
@@ -375,133 +411,79 @@ export default function CalendarPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Create Event"
+        title={editingEventId ? "Edit Event" : "Create Event"}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: "500",
-                marginBottom: "4px",
-              }}
-            >
-              Event Title
-            </label>
+            <label style={styles.label}>Event Title *</label>
             <input
               type="text"
               placeholder="Enter event title"
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid #D1D5DB",
-              }}
+              style={styles.input}
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
           </div>
           <div style={{ display: "flex", gap: "12px" }}>
             <div style={{ flex: 1 }}>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: "500",
-                  marginBottom: "4px",
-                }}
-              >
-                Date
-              </label>
+              <label style={styles.label}>Date *</label>
               <input
                 type="date"
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  border: "1px solid #D1D5DB",
-                }}
+                style={styles.input}
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               />
             </div>
             <div style={{ flex: 1 }}>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: "500",
-                  marginBottom: "4px",
-                }}
-              >
-                Time
-              </label>
+              <label style={styles.label}>Time</label>
               <input
                 type="time"
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  borderRadius: "6px",
-                  border: "1px solid #D1D5DB",
-                }}
+                style={styles.input}
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
               />
             </div>
           </div>
-          <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: "500",
-                marginBottom: "4px",
-              }}
-            >
-              Location
-            </label>
-            <input
-              type="text"
-              placeholder="E.g., Room 101, Online"
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid #D1D5DB",
-              }}
-            />
+          <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ flex: 1 }}>
+              <label style={styles.label}>Location</label>
+              <input
+                type="text"
+                placeholder="E.g., Room 101, Online"
+                style={styles.input}
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={styles.label}>Status</label>
+              <select 
+                style={{ ...styles.input, backgroundColor: '#fff' }}
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <option value="Normal">Normal (Blue)</option>
+                <option value="Urgent">Urgent (Red)</option>
+                <option value="Important">Important (Orange)</option>
+                <option value="Completed">Completed (Green)</option>
+                <option value="Prep">Prep (Purple)</option>
+              </select>
+            </div>
           </div>
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: "500",
-                marginBottom: "4px",
-              }}
-            >
-              Description
-            </label>
+            <label style={styles.label}>Description</label>
             <textarea
               placeholder="Event description..."
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid #D1D5DB",
-                minHeight: "80px",
-              }}
+              style={{ ...styles.input, minHeight: "80px", resize: 'vertical' }}
+              value={formData.desc}
+              onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
             ></textarea>
           </div>
           <button
-            style={{
-              marginTop: "16px",
-              padding: "10px",
-              background: "#2563EB",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              fontWeight: "500",
-              cursor: "pointer",
-            }}
-            onClick={() => setIsModalOpen(false)}
+            style={styles.primaryBtn}
+            onClick={handleSubmit}
           >
-            Save Event
+            {editingEventId ? "Update Event" : "Save Event"}
           </button>
         </div>
       </Modal>
@@ -510,309 +492,41 @@ export default function CalendarPage() {
 }
 
 const styles = {
-  root: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "#F0F4FF",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  sidebar: {
-    background: "#fff",
-    borderRight: "1px solid #E5E7EB",
-    display: "flex",
-    flexDirection: "column",
-    transition: "width 0.25s ease",
-    overflow: "hidden",
-    flexShrink: 0,
-    position: "sticky",
-    top: 0,
-    height: "100vh",
-  },
-  sidebarLogo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "18px 16px",
-    borderBottom: "1px solid #E5E7EB",
-    whiteSpace: "nowrap",
-  },
-  sidebarLogoName: {
-    fontFamily: "'Fraunces', serif",
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#2563EB",
-    letterSpacing: "-0.3px",
-  },
-  navItems: {
-    display: "flex",
-    flexDirection: "column",
-    padding: "12px 0",
-    flex: 1,
-  },
-  navItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    padding: "10px 16px",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "500",
-    fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-    whiteSpace: "nowrap",
-    width: "100%",
-    textAlign: "left",
-  },
-  navLabel: { fontSize: "13px" },
-  sidebarBottom: { borderTop: "1px solid #E5E7EB", padding: "12px 0" },
+  root: { display: "flex", minHeight: "100vh", background: "#F0F4FF", fontFamily: "'DM Sans', sans-serif" },
   content: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
-  topNav: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "12px 24px",
-    background: "#fff",
-    borderBottom: "1px solid #E5E7EB",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-  },
-  topNavLeft: { display: "flex", alignItems: "center", gap: "12px" },
-  topNavRight: { display: "flex", alignItems: "center", gap: "16px" },
-  toggleBtn: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    padding: "4px",
-    borderRadius: "6px",
-  },
-  pageLabel: { fontSize: "14px", fontWeight: "500", color: "#6B7280" },
-  tabGroup: {
-    display: "flex",
-    background: "#F3F4F6",
-    borderRadius: "8px",
-    padding: "3px",
-    gap: "2px",
-  },
-  tabBtn: {
-    padding: "5px 14px",
-    borderRadius: "6px",
-    border: "none",
-    fontSize: "13px",
-    fontWeight: "500",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-  },
-  avatar: {
-    width: "34px",
-    height: "34px",
-    borderRadius: "50%",
-    background: "#2563EB",
-    color: "#fff",
-    fontSize: "12px",
-    fontWeight: "600",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  main: { padding: "20px 24px", flex: 1, animation: "fadeUp 0.4s ease both" },
-  calHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "14px",
-    gap: "8px",
-  },
-  calHeaderLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    flexShrink: 0,
-  },
-  eventsBadge: {
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-    padding: "0 10px",
-    borderRadius: "8px",
-    fontSize: "12px",
-    fontWeight: "500",
-    height: "32px",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-  },
-  viewSwitcher: {
-    display: "flex",
-    alignItems: "center",
-    background: "#fff",
-    border: "0.5px solid #E5E7EB",
-    borderRadius: "8px",
-    overflow: "hidden",
-    height: "32px",
-    flexShrink: 0,
-  },
-  viewBtn: {
-    padding: "0 10px",
-    fontSize: "11px",
-    border: "none",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-    color: "#6B7280",
-    height: "100%",
-    whiteSpace: "nowrap",
-  },
-  addBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-    padding: "0 12px",
-    background: "#2563EB",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "12px",
-    fontWeight: "500",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-    height: "32px",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-  },
-  readonlyBadge: {
-    display: "flex",
-    alignItems: "center",
-    padding: "0 12px",
-    background: "#F3F4F6",
-    color: "#9CA3AF",
-    borderRadius: "8px",
-    fontSize: "12px",
-    border: "0.5px solid #E5E7EB",
-    height: "32px",
-    whiteSpace: "nowrap",
-    flexShrink: 0,
-  },
-  calNav: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "10px",
-  },
-  calNavBtn: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    color: "#6B7280",
-    fontSize: "18px",
-    padding: "4px 8px",
-  },
-  calMonth: { fontSize: "14px", fontWeight: "500", color: "#111827" },
-  calGrid: { width: "100%", borderCollapse: "collapse", tableLayout: "fixed" },
-  calTh: {
-    fontSize: "11px",
-    color: "#9CA3AF",
-    padding: "5px 3px",
-    textAlign: "center",
-    fontWeight: "500",
-    borderBottom: "0.5px solid #E5E7EB",
-  },
-  calCell: {
-    border: "0.5px solid #E5E7EB",
-    verticalAlign: "top",
-    padding: "4px",
-    height: "72px",
-  },
-  emptyCell: {
-    border: "0.5px solid #E5E7EB",
-    background: "#F9FAFB",
-    opacity: 0.5,
-  },
-  dayNum: { fontSize: "11px", color: "#6B7280", marginBottom: "3px" },
-  todayNum: {
-    background: "#2563EB",
-    color: "#fff",
-    width: "20px",
-    height: "20px",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "10px",
-    marginBottom: "3px",
-  },
-  eventPill: {
-    fontSize: "10px",
-    padding: "2px 5px",
-    borderRadius: "3px",
-    marginBottom: "2px",
-    fontWeight: "500",
-    color: "#fff",
-    whiteSpace: "normal",
-    wordBreak: "break-word",
-    lineHeight: "1.3",
-  },
-  detailPanel: {
-    background: "#fff",
-    borderRadius: "16px",
-    border: "0.5px solid #E5E7EB",
-    padding: "16px",
-    marginTop: "14px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  },
-  detailTitle: {
-    fontSize: "15px",
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: "10px",
-  },
-  detailRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "12px",
-    color: "#6B7280",
-    marginBottom: "6px",
-  },
-  detailDesc: {
-    fontSize: "12px",
-    color: "#9CA3AF",
-    lineHeight: "1.6",
-    margin: "10px 0",
-    padding: "10px",
-    background: "#F9FAFB",
-    borderRadius: "8px",
-  },
-  detailActions: {
-    display: "flex",
-    gap: "10px",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginTop: "10px",
-  },
-  editBtn: {
-    padding: "6px 18px",
-    borderRadius: "8px",
-    border: "0.5px solid #D1D5DB",
-    background: "#fff",
-    fontSize: "12px",
-    fontWeight: "500",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-    color: "#374151",
-  },
-  deleteBtn: {
-    padding: "6px 18px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#ef4444",
-    color: "#fff",
-    fontSize: "12px",
-    fontWeight: "500",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  classNotice: { fontSize: "11px", color: "#9CA3AF", fontStyle: "italic" },
+  topNav: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", background: "#fff", borderBottom: "1px solid #E5E7EB", position: "sticky", top: 0, zIndex: 100 },
+  topNavLeft: { display: "flex", alignItems: "center", gap: "16px" },
+  toggleBtn: { background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "6px", borderRadius: "6px" },
+  pageLabel: { fontSize: "16px", fontWeight: "600", color: "#111827" },
+  topNavRight: { display: "flex", alignItems: "center", gap: "20px" },
+  tabGroup: { display: "flex", background: "#F3F4F6", borderRadius: "8px", padding: "4px" },
+  tabBtn: { border: "none", padding: "6px 16px", borderRadius: "6px", fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "all 0.2s" },
+  avatar: { width: "36px", height: "36px", borderRadius: "50%", background: "#DBEAFE", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "600" },
+  main: { padding: "24px", maxWidth: "900px", margin: "0 auto", width: "100%", paddingBottom: '100px' },
+  calHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" },
+  calHeaderLeft: { display: "flex", alignItems: "center", gap: "12px" },
+  eventsBadge: { display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", borderRadius: "20px", fontSize: "13px", fontWeight: "600" },
+  addBtn: { display: "flex", alignItems: "center", gap: "6px", background: "#2563EB", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", boxShadow: "0 2px 4px rgba(37,99,235,0.2)" },
+  readonlyBadge: { background: "#F3F4F6", color: "#4B5563", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" },
+  calNav: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "#fff", border: "1px solid #E5E7EB", borderBottom: "none", borderTopLeftRadius: "12px", borderTopRightRadius: "12px" },
+  calNavBtn: { background: "#F9FAFB", border: "1px solid #E5E7EB", width: "32px", height: "32px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#4B5563", fontSize: "16px" },
+  calMonth: { fontSize: "15px", fontWeight: "600", color: "#111827" },
+  calGrid: { width: "100%", borderCollapse: "collapse", background: "#fff", border: "1px solid #E5E7EB", borderBottomLeftRadius: "12px", borderBottomRightRadius: "12px", overflow: "hidden" },
+  calTh: { padding: "12px", textAlign: "center", fontSize: "12px", fontWeight: "600", color: "#6B7280", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid #E5E7EB", background: "#F9FAFB", width: "calc(100% / 7)" },
+  calCell: { height: "100px", verticalAlign: "top", padding: "8px", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid #E5E7EB", transition: "background 0.15s" },
+  emptyCell: { background: "#FAFAFA", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid #E5E7EB" },
+  dayNum: { fontSize: "13px", fontWeight: "500", color: "#374151", marginBottom: "6px", display: "inline-block" },
+  todayNum: { fontSize: "13px", fontWeight: "600", color: "#fff", background: "#2563EB", width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", marginBottom: "6px" },
+  eventPill: { padding: "4px 8px", borderRadius: "4px", color: "#fff", fontSize: "11px", fontWeight: "600", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  detailPanel: { marginTop: "20px", background: "#fff", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "20px", animation: "fadeUp 0.3s ease" },
+  detailTitle: { fontSize: "16px", fontWeight: "600" },
+  detailRow: { display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#4B5563" },
+  detailDesc: { marginTop: "16px", padding: "12px", background: "#F9FAFB", borderRadius: "8px", fontSize: "13px", color: "#374151", lineHeight: "1.5" },
+  detailActions: { display: "flex", gap: "10px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #E5E7EB" },
+  editBtn: { padding: "6px 14px", background: "#DBEAFE", color: "#2563EB", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "600", cursor: "pointer" },
+  deleteBtn: { padding: "6px 14px", background: "#FEE2E2", color: "#DC2626", border: "none", borderRadius: "6px", fontSize: "12px", fontWeight: "600", cursor: "pointer" },
+  classNotice: { fontSize: "12px", color: "#6B7280", fontStyle: "italic" },
+  label: { display: "block", fontSize: "13px", fontWeight: "500", marginBottom: "4px", color: '#4B5563' },
+  input: { width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #D1D5DB", outline: 'none', fontFamily: 'inherit' },
+  primaryBtn: { marginTop: "24px", width: "100%", padding: "12px", background: "#2563EB", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "600", cursor: "pointer", fontSize: '14px' },
 };

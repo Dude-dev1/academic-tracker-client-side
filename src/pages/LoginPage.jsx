@@ -460,7 +460,8 @@ const styles = {
   socialBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
+    justifyContent: "center",
+    gap: "8px",
     padding: "0 16px",
     height: "44px",
     border: "1.5px solid #E5E7EB",
@@ -474,7 +475,6 @@ const styles = {
     transition: "background 0.15s, border-color 0.15s",
   },
   socialLabel: {
-    flex: 1,
     textAlign: "center",
   },
   footer: {

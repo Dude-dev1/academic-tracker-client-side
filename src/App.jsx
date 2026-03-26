@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useTheme } from "./context/ThemeContext";
 import LoginPage from "./pages/LoginPage";
+import GoogleCallbackPage from "./pages/GoogleCallbackPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import CoursesPage from "./pages/CoursesPage";
@@ -39,6 +40,10 @@ function App() {
           <main className="flex-1 flex flex-col w-full">
             <Routes>
               {/* Public Routes */}
+              <Route
+                path="/google-callback"
+                element={<GoogleCallbackPage />}
+              />
               <Route
                 path="/login"
                 element={

@@ -1,41 +1,63 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
-const initialAnnouncements = [
-  {
-    id: 1,
-    title: "Deadline Extended for Project Proposal",
-    body: "The due date for the research paper has been extended to March 20, 2026. Please do well to submit your work by the new deadline.",
-    date: "Posted Feb 5, 2026",
-    pinned: true,
-    iconColor: "#7C3AED",
-  },
-  {
-    id: 2,
-    title: "Workshop Reminder",
-    body: "Don't forget the Web Development workshop happening on March 18th at the Great Hall. Attendance is compulsory for all students.",
-    date: "Posted Feb 10, 2026",
-    pinned: false,
-    iconColor: "#2563EB",
-  },
-  {
-    id: 3,
-    title: "Field Trip Details",
-    body: "The industry field trip to Accra is confirmed for March 24th. Please ensure you have your student ID and arrive at the bus stop by 7:30 am.",
-    date: "Posted Feb 14, 2026",
-    pinned: false,
-    iconColor: "#10b981",
-  },
-];
+import announcementService from "../services/announcementService";
 
 export default function AnnouncementsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [announcements, setAnnouncements] = useState(initialAnnouncements);
+  const [announcements, setAnnouncements] = useState([]);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Modal forms
+  const [newTitle, setNewTitle] = useState("");
+  const [newBody, setNewBody] = useState("");
+
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, []);
+
+  const fetchAnnouncements = async () => {
+    try {
+      const data = await announcementService.getAnnouncements();
+      setAnnouncements(data);
+    } catch (error) {
+      console.error("Failed to fetch announcements:", error);
+    }
+  };
+
+  const handlePostAnnouncement = async () => {
+    if (!newTitle.trim() || !newBody.trim()) return;
+    try {
+      const newAnn = await announcementService.createAnnouncement({
+        title: newTitle,
+        body: newBody,
+        pinned: false,
+        iconColor: "#2563EB",
+      });
+      setAnnouncements([newAnn, ...announcements]);
+      setIsModalOpen(false);
+      setNewTitle("");
+      setNewBody("");
+    } catch (error) {
+      console.error("Failed to post announcement:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await announcementService.deleteAnnouncement(id);
+      setAnnouncements((prev) => prev.filter((a) => a._id !== id));
+    } catch (error) {
+      console.error("Failed to delete announcement:", error);
+    }
+  };
 
   const firstName =
     user?.displayName?.split(" ")[0] ||
@@ -50,12 +72,6 @@ export default function AnnouncementsPage() {
       a.body.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = (id) => {
-    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
-  };
-
-  const navigate = useNavigate();
-  const location = useLocation();
   return (
     <div style={styles.root}>
       <style>{`
@@ -116,20 +132,23 @@ export default function AnnouncementsPage() {
               </div>
               <p style={styles.pageTitle}>Announcements</p>
             </div>
-            <button style={styles.newBtn} onClick={() => setIsModalOpen(true)}>
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#fff"
-                strokeWidth="2.5"
-              >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              New Announcement
-            </button>
+            
+            {user?.role === "instructor" && (
+              <button style={styles.newBtn} onClick={() => setIsModalOpen(true)}>
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="2.5"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                New Announcement
+              </button>
+            )}
           </div>
 
           {/* Instructor Notice */}
@@ -185,7 +204,7 @@ export default function AnnouncementsPage() {
               </div>
             ) : (
               filtered.map((ann) => (
-                <div key={ann.id} style={styles.annCard}>
+                <div key={ann._id || ann.id} style={styles.annCard}>
                   <div style={styles.annCardHeader}>
                     <div style={styles.annCardTitle}>
                       <svg
@@ -193,7 +212,7 @@ export default function AnnouncementsPage() {
                         height="14"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke={ann.iconColor}
+                        stroke={ann.iconColor || "#2563EB"}
                         strokeWidth="2"
                       >
                         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -206,16 +225,20 @@ export default function AnnouncementsPage() {
                   </div>
                   <p style={styles.annCardBody}>{ann.body}</p>
                   <div style={styles.annCardFooter}>
-                    <span style={styles.annDate}>{ann.date}</span>
-                    <div style={styles.annActions}>
-                      <button style={styles.editBtn}>Edit</button>
-                      <button
-                        style={styles.deleteBtn}
-                        onClick={() => handleDelete(ann.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    <span style={styles.annDate}>
+                      {ann.createdAt ? `Posted ${new Date(ann.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ann.date}
+                    </span>
+                    {user?.role === "instructor" && (
+                      <div style={styles.annActions}>
+                        <button style={styles.editBtn}>Edit</button>
+                        <button
+                          style={styles.deleteBtn}
+                          onClick={() => handleDelete(ann._id || ann.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -244,6 +267,8 @@ export default function AnnouncementsPage() {
             <input
               type="text"
               placeholder="Announcement title"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -265,6 +290,8 @@ export default function AnnouncementsPage() {
             </label>
             <textarea
               placeholder="Type your message here..."
+              value={newBody}
+              onChange={(e) => setNewBody(e.target.value)}
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -285,7 +312,7 @@ export default function AnnouncementsPage() {
               fontWeight: "500",
               cursor: "pointer",
             }}
-            onClick={() => setIsModalOpen(false)}
+            onClick={handlePostAnnouncement}
           >
             Post Announcement
           </button>
