@@ -5,6 +5,7 @@ import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
 import assignmentService from "../services/assignmentService";
 import { getCourses } from "../services/courseService";
+import announcementService from "../services/announcementService";
 import { useEffect } from "react";
 // const dummyAssignments = [];
 
@@ -129,6 +130,17 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
   
   const completed = assignments.filter(a => a.status === "completed").length;
 
+  const completionRate = assignments.length > 0 
+    ? Math.round((completed / assignments.length) * 100) 
+    : 0;
+  const inProgress = assignments.length - completed;
+
+  const recentActivity = assignments.length > 0 ? [...assignments].sort((a, b) => {
+    const dpA = new Date(a.updatedAt || a.createdAt || a.dueDate || 0).getTime();
+    const dpB = new Date(b.updatedAt || b.createdAt || b.dueDate || 0).getTime();
+    return dpB - dpA;
+  })[0] : null;
+
   return (
     <>
       <div style={styles.welcomeBlock}>
@@ -196,7 +208,7 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
           },
           {
             label: "Completion",
-            value: "25%",
+            value: `${completionRate}%`,
             color: "#2563EB",
             icon: (
               <svg
@@ -232,6 +244,7 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
             <h2 style={{ ...styles.cardTitle, marginBottom: "12px" }}>
               Last Activity
             </h2>
+            {recentActivity ? (
             <div style={styles.activityItem}>
               <div style={styles.activityIcon}>
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
@@ -245,14 +258,16 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
                 </svg>
               </div>
               <div>
-                <p style={styles.activityTitle}>Web Technologies</p>
-                <p style={styles.activitySub}>Assignment 2</p>
+                <p style={styles.activityTitle}>{recentActivity.courseId?.name || "General"}</p>
+                <p style={styles.activitySub}>{recentActivity.title}</p>
                 <div style={styles.activityFooter}>
-                  <span style={styles.completedBadge}>completed</span>
-                  <span style={styles.activityWeek}>Week 2</span>
+                  <span style={styles.completedBadge}>{recentActivity.status || "pending"}</span>
                 </div>
               </div>
             </div>
+            ) : (
+              <p style={{ fontSize: "14px", color: "#6B7280" }}>No recent activity.</p>
+            )}
           </div>
           <div style={styles.card}>
             <div style={styles.cardHeaderRow}>
@@ -290,24 +305,23 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
           <div style={styles.card}>
             <div style={styles.cardHeaderRow}>
               <h2 style={styles.cardTitle}>Progress overview</h2>
-              <span style={styles.progressPct}>25%</span>
+              <span style={styles.progressPct}>{completionRate}%</span>
             </div>
             <p style={styles.progressOverviewLabel}>Assignment completion</p>
             <div style={styles.progressTrack}>
               <div
                 style={{
                   ...styles.progressBar,
-                  width: "25%",
+                  width: `${completionRate}%`,
                   background: "#2563EB",
                 }}
               />
             </div>
             <div style={{ height: "16px" }} />
             {[
-              { label: "Total Assignments", value: "4" },
-              { label: "Completed",
-            value: completed.toString() },
-              { label: "In progress", value: "2" },
+              { label: "Total Assignments", value: assignments.length.toString() },
+              { label: "Completed", value: completed.toString() },
+              { label: "In progress", value: inProgress.toString() },
             ].map(({ label, value }) => (
               <div key={label} style={styles.statRow}>
                 <span style={styles.statLabel}>{label}</span>
@@ -447,36 +461,33 @@ function ClassOnboarding() {
   );
 }
 
-function ClassView({ assignments = [], courses = [], navigate }) {
+function ClassView({ assignments = [], courses = [], navigate, announcements = [] }) {
   return (
     <>
       <div style={styles.noteCard}>
         Note: This is a shared dashboard visible to all class members. Course
         representatives can post announcements and updates here.
       </div>
+      {announcements && announcements.length > 0 ? (
       <div style={styles.announcementBanner}>
         <div style={styles.announcementBannerLeft}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#2563EB"
-            strokeWidth="2"
-          >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
           </svg>
           <div>
             <p style={styles.announcementTag}>Course Announcements</p>
-            <p style={styles.announcementText}>Proposal Extended Deadline</p>
+            <p style={styles.announcementText}>{announcements[0].title}</p>
           </div>
         </div>
-        <span style={styles.announcementTime}>2hr ago</span>
+        <span style={styles.announcementTime}>
+          {new Date(announcements[0].createdAt || Date.now()).toLocaleDateString()}
+        </span>
       </div>
+      ) : null}
       <div style={styles.card}>
         <h2 style={styles.cardTitleCenter}>Assignment Submission Progress</h2>
         <div style={styles.assignmentList}>
-          {assignments.map((a, i) => (
+          {assignments.slice(0, 4).map((a, i) => (
             <div
               key={i}
               style={{
@@ -504,10 +515,10 @@ function ClassView({ assignments = [], courses = [], navigate }) {
                     <line x1="8" y1="2" x2="8" y2="6" />
                     <line x1="3" y1="10" x2="21" y2="10" />
                   </svg>
-                  <span style={styles.dateText}>{a.date}</span>
+                  <span style={styles.dateText}>{a.dueDate ? new Date(a.dueDate).toLocaleDateString() : "No Date"}</span>
                 </div>
                 <div style={styles.submittedBadge}>
-                  {a.submitted}/{a.total} submitted
+                  {a.status || "pending"}
                 </div>
               </div>
               <div style={styles.progressWrapper}>
@@ -546,7 +557,7 @@ function ClassView({ assignments = [], courses = [], navigate }) {
             </svg>
             <h2 style={styles.cardTitle}>Upcoming Deadlines</h2>
           </div>
-          {assignments.map((a, i) => (
+          {assignments.slice(0, 4).map((a, i) => (
             <div key={i} style={styles.deadlineItem}>
               <div>
                 <p style={styles.deadlineDate}>{a.dueDate ? new Date(a.dueDate).toLocaleDateString() : "No deadline"}</p>
@@ -582,9 +593,9 @@ function ClassView({ assignments = [], courses = [], navigate }) {
             <h2 style={styles.cardTitle}>Class Statistics</h2>
           </div>
           {[
-            { label: "Total Students", value: "35" },
-            { label: "Active Assignments", value: "4" },
-            { label: "Avg. Submission Rate", value: "68%" },
+            { label: "Total Courses", value: courses.length.toString() },
+            { label: "Active Assignments", value: assignments.filter(a => a.status !== "completed").length.toString() },
+            { label: "Avg. Completion Rate", value: assignments.length > 0 ? Math.round((assignments.filter(a => a.status === 'completed').length / assignments.length) * 100) + '%' : '0%' },
           ].map(({ label, value }) => (
             <div key={label} style={styles.statRow}>
               <span style={styles.statLabel}>{label}</span>
@@ -600,17 +611,20 @@ function ClassView({ assignments = [], courses = [], navigate }) {
 export default function DashboardPage() {
   const [courses, setCourses] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [courseRes, assignRes] = await Promise.all([
+        const [courseRes, assignRes, annRes] = await Promise.all([
           getCourses(),
           assignmentService.getAssignments(),
+          announcementService.getAnnouncements(),
         ]);
         if (courseRes?.data) setCourses(courseRes.data);
         if (assignRes?.data) setAssignments(assignRes.data);
+        if (annRes?.length !== undefined) setAnnouncements(annRes);
       } catch (err) {
         console.error("Failed to fetch dashboard data", err);
       } finally {
@@ -707,7 +721,7 @@ export default function DashboardPage() {
           ) : isFirstTimeUser ? (
             <ClassOnboarding />
           ) : (
-            <ClassView assignments={assignments} courses={courses} navigate={navigate} />
+            <ClassView assignments={assignments} courses={courses} navigate={navigate} announcements={announcements} />
           )}
         </main>
       </div>

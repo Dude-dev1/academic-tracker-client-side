@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/ui/Sidebar";
+import ConfirmModal from "../components/ui/ConfirmModal";
+import Modal from "../components/ui/Modal";
 import { useAuth } from "../context/AuthContext";
 import {
   getCourses,
@@ -25,6 +27,7 @@ export default function CoursesPage() {
     tutorName: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const fetchCourses = async () => {
     try {
@@ -80,14 +83,18 @@ export default function CoursesPage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
-      try {
-        await deleteCourse(id);
-        fetchCourses();
-      } catch (error) {
-        console.error("Error deleting course", error);
-      }
+const handleDelete = (id) => {
+    setItemToDelete(id);
+  };
+
+  const executeDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+      await deleteCourse(itemToDelete);
+      fetchCourses();
+      setItemToDelete(null);
+    } catch (error) {
+      console.error("Error deleting course", error);
     }
   };
 
@@ -322,6 +329,13 @@ export default function CoursesPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={executeDelete}
+        message="Are you sure you want to delete this course?"
+      />
     </div>
   );
 }

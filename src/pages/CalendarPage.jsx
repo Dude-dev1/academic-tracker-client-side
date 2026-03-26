@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import Sidebar from "../components/ui/Sidebar";
 import { calendarEventService } from "../services/calendarEventService";
 
@@ -157,9 +158,10 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(todayDate.getMonth()); 
   
   const [events, setEvents] = useState([]);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEventId, setEditingEventId] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     date: "",
@@ -258,15 +260,19 @@ export default function CalendarPage() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteEvent = async (id) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
-      try {
-        await calendarEventService.deleteEvent(id);
-        setSelectedDay(null);
-        fetchEvents();
-      } catch (err) {
-        console.error("Failed to delete event", err);
-      }
+const handleDeleteEvent = (id) => {
+    setItemToDelete(id);
+  };
+
+  const executeDelete = async () => {
+    if (!itemToDelete) return;
+    try {
+      await calendarEventService.deleteEvent(itemToDelete);
+      setSelectedDay(null);
+      fetchEvents();
+      setItemToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete event", err);
     }
   };
 
@@ -487,6 +493,13 @@ export default function CalendarPage() {
           </button>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={executeDelete}
+        message="Are you sure you want to delete this event?"
+      />
     </div>
   );
 }

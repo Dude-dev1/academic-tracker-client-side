@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import Sidebar from "../components/ui/Sidebar";
 import announcementService from "../services/announcementService";
 
@@ -11,6 +12,10 @@ export default function AnnouncementsPage() {
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  // Edit & Delete state
+  const [editingId, setEditingId] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
   // Modal forms
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
@@ -35,25 +40,44 @@ export default function AnnouncementsPage() {
   const handlePostAnnouncement = async () => {
     if (!newTitle.trim() || !newBody.trim()) return;
     try {
-      const newAnn = await announcementService.createAnnouncement({
-        title: newTitle,
-        body: newBody,
-        pinned: false,
-        iconColor: "#2563EB",
-      });
-      setAnnouncements([newAnn, ...announcements]);
+      if (editingId) {
+        const updatedAnn = await announcementService.updateAnnouncement(editingId, {
+          title: newTitle,
+          body: newBody,
+        });
+        setAnnouncements((prev) =>
+          prev.map((a) => (a._id === editingId || a.id === editingId ? updatedAnn : a))
+        );
+      } else {
+        const newAnn = await announcementService.createAnnouncement({
+          title: newTitle,
+          body: newBody,
+          pinned: false,
+          iconColor: "#2563EB",
+        });
+        setAnnouncements([newAnn, ...announcements]);
+      }
       setIsModalOpen(false);
       setNewTitle("");
       setNewBody("");
+      setEditingId(null);
     } catch (error) {
-      console.error("Failed to post announcement:", error);
+      console.error("Failed to save announcement:", error);
     }
+  };
+
+  const handleEditClick = (ann) => {
+    setEditingId(ann._id || ann.id);
+    setNewTitle(ann.title);
+    setNewBody(ann.body);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
     try {
       await announcementService.deleteAnnouncement(id);
-      setAnnouncements((prev) => prev.filter((a) => a._id !== id));
+      setAnnouncements((prev) => prev.filter((a) => a._id !== id && a.id !== id));
+      setItemToDelete(null);
     } catch (error) {
       console.error("Failed to delete announcement:", error);
     }
@@ -134,7 +158,12 @@ export default function AnnouncementsPage() {
             </div>
             
             {user?.role === "instructor" && (
-              <button style={styles.newBtn} onClick={() => setIsModalOpen(true)}>
+              <button style={styles.newBtn} onClick={() => {
+                setEditingId(null);
+                setNewTitle("");
+                setNewBody("");
+                setIsModalOpen(true);
+              }}>
                 <svg
                   width="11"
                   height="11"
@@ -230,10 +259,15 @@ export default function AnnouncementsPage() {
                     </span>
                     {user?.role === "instructor" && (
                       <div style={styles.annActions}>
-                        <button style={styles.editBtn}>Edit</button>
+                        <button 
+                          style={styles.editBtn} 
+                          onClick={() => handleEditClick(ann)}
+                        >
+                          Edit
+                        </button>
                         <button
                           style={styles.deleteBtn}
-                          onClick={() => handleDelete(ann._id || ann.id)}
+                          onClick={() => setItemToDelete(ann._id || ann.id)}
                         >
                           Delete
                         </button>
@@ -250,7 +284,7 @@ export default function AnnouncementsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="New Announcement"
+        title={editingId ? "Edit Announcement" : "New Announcement"}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <div>
@@ -314,10 +348,17 @@ export default function AnnouncementsPage() {
             }}
             onClick={handlePostAnnouncement}
           >
-            Post Announcement
+            {editingId ? "Save Changes" : "Post Announcement"}
           </button>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => handleDelete(itemToDelete)}
+        message="Are you sure you want to delete this announcement?"
+      />
     </div>
   );
 }

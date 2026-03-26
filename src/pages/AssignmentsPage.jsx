@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Modal from "../components/ui/Modal";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import Sidebar from "../components/ui/Sidebar";
 import assignmentService from "../services/assignmentService";
 import * as courseService from "../services/courseService";
 
 function statusStyle(status) {
   if (status === "open") return { background: "#D1FAE5", color: "#065F46" };
+  if (status === "completed") return { background: "#DBEAFE", color: "#2563EB" };
+  if (status === "completed") return { background: "#DBEAFE", color: "#2563EB" };
   if (status === "closed") return { background: "#F3F4F6", color: "#6B7280" };
   return { background: "#FEE2E2", color: "#991B1B" };
 }
@@ -21,7 +24,7 @@ function groupStyle(group) {
   return { background: "#DBEAFE", color: "#1D4ED8" }; // light blue for "All"
 }
 
-function ActionDropdown({ onClose, onDelete, onEdit }) {
+function ActionDropdown({ onClose, onDelete, onEdit, row, onComplete }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -125,6 +128,8 @@ function AssignmentRow({ row, onDelete, onEdit }) {
             onClose={() => setOpen(false)}
             onDelete={() => onDelete(row._id)}
             onEdit={() => onEdit(row)}
+            row={row}
+            onComplete={onEdit} 
           />
         )}
       </td>
@@ -150,6 +155,7 @@ export default function AssignmentsPage() {
   const [newDueDate, setNewDueDate] = useState("");
   const [newCourseId, setNewCourseId] = useState("");
   const [newGroup, setNewGroup] = useState("All");
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const { user } = useAuth();
   const isClass = activeTab === "Class";
@@ -236,7 +242,16 @@ export default function AssignmentsPage() {
     }
   };
 
-  const openEditModal = (a) => {
+  const openEditModal = async (a) => {
+    if (a.overrideStatusOnly) {
+      try {
+        await assignmentService.updateAssignment(a._id, { status: a.status });
+        fetchData();
+      } catch (err) {
+        console.error("Update failed", err);
+      }
+      return;
+    }
     setEditingId(a._id);
     setNewTitle(a.title);
     setNewDueDate(
@@ -253,12 +268,16 @@ export default function AssignmentsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this assignment?"))
-      return;
+  const handleDelete = (id) => {
+    setItemToDelete(id);
+  };
+
+  const executeDelete = async () => {
+    if (!itemToDelete) return;
     try {
-      await assignmentService.deleteAssignment(id);
+      await assignmentService.deleteAssignment(itemToDelete);
       fetchData();
+      setItemToDelete(null);
     } catch (err) {
       console.error("Delete failed", err);
       alert(err.response?.data?.message || "Delete failed");
@@ -597,6 +616,13 @@ export default function AssignmentsPage() {
           </button>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={executeDelete}
+        message="Are you sure you want to delete this assignment?"
+      />
     </div>
   );
 }

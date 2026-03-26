@@ -11,6 +11,11 @@ const announcementService = {
     return response.data.data;
   },
 
+  updateAnnouncement: async (id, data) => {
+    const response = await api.put(`/announcements/${id}`, data);
+    return response.data.data;
+  },
+
   deleteAnnouncement: async (id) => {
     const response = await api.delete(`/announcements/${id}`);
     return response.data.data || response.data;
