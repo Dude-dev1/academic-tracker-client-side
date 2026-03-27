@@ -71,46 +71,53 @@ function PieChart({ pieSegments = [] }) {
 function LineChart({ weeklyData = [], weekLabels = [] }) {
   const canvasRef = useRef(null);
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const W = canvas.offsetWidth || 700;
-    const H = 120;
-    canvas.width = W;
-    const maxV = Math.max(...weeklyData, 1); // Avoid division by 0
-    const padL = 24,
-      padR = 16,
-      padT = 10,
-      padB = 28;
-    const xStep = (W - padL - padR) / (weeklyData.length - 1);
-    const coords = weeklyData.map((v, i) => ({
-      x: padL + i * xStep,
-      y: padT + (1 - v / maxV) * (H - padT - padB),
-    }));
-    ctx.strokeStyle = "#2563EB";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    coords.forEach((p, i) =>
-      i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)
-    );
-    ctx.stroke();
-    coords.forEach((p) => {
+    const draw = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const W = canvas.offsetWidth || 700;
+      const H = 120;
+      canvas.width = W;
+      ctx.clearRect(0, 0, W, H);
+      const maxV = Math.max(...weeklyData, 1); // Avoid division by 0
+      const padL = 24,
+        padR = 16,
+        padT = 10,
+        padB = 28;
+      const xStep = (W - padL - padR) / (Math.max(weeklyData.length - 1, 1));
+      const coords = weeklyData.map((v, i) => ({
+        x: padL + i * xStep,
+        y: padT + (1 - v / maxV) * (H - padT - padB),
+      }));
+      ctx.strokeStyle = "#2563EB";
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = "#2563EB";
-      ctx.fill();
-    });
-    ctx.fillStyle = "#9CA3AF";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "center";
-    weekLabels.forEach((l, i) => ctx.fillText(l, coords[i].x, H - 6));
+      coords.forEach((p, i) =>
+        i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)
+      );
+      ctx.stroke();
+      coords.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#2563EB";
+        ctx.fill();
+      });
+      ctx.fillStyle = "#9CA3AF";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "center";
+      weekLabels.forEach((l, i) => ctx.fillText(l, coords[i].x, H - 6));
+    };
+    
+    draw();
+    window.addEventListener("resize", draw);
+    return () => window.removeEventListener("resize", draw);
   }, [weeklyData, weekLabels]);
 
   return (
     <canvas
       ref={canvasRef}
       height={120}
-      style={{ width: "100%", height: "120px" }}
+      style={{ width: "100%", height: "120px", display: "block" }}
     />
   );
 }
@@ -238,26 +245,9 @@ export default function ProgressPage() {
       <div style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
-            <button
-              onClick={() => setIsSidebarOpen(v => !v)}
-              style={styles.toggleBtn}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#6B7280"
-                strokeWidth="2"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </button>
             <p style={styles.pageLabel}>Progress</p>
           </div>
-          <div style={styles.topNavRight}>
+          <div className="topNavRight" style={styles.topNavRight}>
             <div style={styles.tabGroup}>
               {["Personal", "Class"].map((tab) => (
                 <button
@@ -634,6 +624,7 @@ const styles = {
     alignItems: "flex-end",
     gap: "8px",
     height: "100px",
+    overflowX: "auto",
   },
   barWrap: {
     display: "flex",
