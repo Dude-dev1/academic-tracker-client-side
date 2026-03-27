@@ -34,7 +34,7 @@ function CalendarGrid({ eventsMap, onSelectEvent, currentDay, currentMonth, curr
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
 
   for (let i = 0; i < firstDay; i++) {
-    cells.push(<td key={`empty-start-${i}`} style={styles.emptyCell} />);
+    cells.push(<td key={`empty-start-${i}`} className="cal-cell" style={styles.emptyCell} />);
   }
 
   for (let d = 1; d <= totalDays; d++) {
@@ -45,15 +45,16 @@ function CalendarGrid({ eventsMap, onSelectEvent, currentDay, currentMonth, curr
       <td
         key={d}
         onClick={() => ev && onSelectEvent(d)}
+        className="cal-cell"
         style={{
           ...styles.calCell,
           background: isToday ? "#EFF6FF" : "transparent",
           cursor: ev ? "pointer" : "default",
         }}
       >
-        <div style={isToday ? styles.todayNum : styles.dayNum}>{d}</div>
+        <div className={isToday ? "today-num" : "day-num"} style={isToday ? styles.todayNum : styles.dayNum}>{d}</div>
         {ev && (
-          <div style={{ ...styles.eventPill, background: STATUS_COLORS[ev.status] || ev.color }}>
+          <div className="event-pill" style={{ ...styles.eventPill, background: STATUS_COLORS[ev.status] || ev.color }}>
             {ev.title}
           </div>
         )}
@@ -62,7 +63,7 @@ function CalendarGrid({ eventsMap, onSelectEvent, currentDay, currentMonth, curr
   }
 
   while (cells.length % 7 !== 0) {
-    cells.push(<td key={`empty-end-${cells.length}`} style={styles.emptyCell} />);
+    cells.push(<td key={`empty-end-${cells.length}`} className="cal-cell" style={styles.emptyCell} />);
   }
 
   const rows = [];
@@ -71,18 +72,20 @@ function CalendarGrid({ eventsMap, onSelectEvent, currentDay, currentMonth, curr
   }
 
   return (
-    <table style={styles.calGrid}>
-      <thead>
-        <tr>
-          {DAY_HEADERS.map((d) => (
-            <th key={d} style={styles.calTh}>
-              {d}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
+    <div className="cal-grid-wrapper">
+      <table style={styles.calGrid}>
+        <thead>
+          <tr>
+            {DAY_HEADERS.map((d) => (
+              <th key={d} className="cal-th" style={styles.calTh}>
+                {d}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
   );
 }
 
@@ -310,6 +313,54 @@ const handleDeleteEvent = (id) => {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .cal-grid-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          border-bottom-left-radius: 12px;
+          border-bottom-right-radius: 12px;
+        }
+
+        /* Mobile overrides */
+        @media (max-width: 640px) {
+          .cal-cell {
+            height: 70px !important;
+            padding: 4px !important;
+          }
+          .cal-th {
+            padding: 8px 2px !important;
+            font-size: 10px !important;
+            overflow: hidden;
+          }
+          .day-num, .today-num {
+            font-size: 11px !important;
+            margin-bottom: 4px !important;
+          }
+          .today-num {
+            width: 20px !important;
+            height: 20px !important;
+          }
+          .event-pill {
+            padding: 2px 4px !important;
+            font-size: 9px !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            line-height: 1.1 !important;
+            text-align: center;
+          }
+          .cal-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .cal-top-nav-right {
+            gap: 8px !important;
+          }
+          .cal-modal-row {
+            flex-direction: column !important;
+            gap: 8px !important;
+          }
+        }
       `}</style>
 
       <Sidebar sidebarOpen={sidebarOpen} />
@@ -326,7 +377,7 @@ const handleDeleteEvent = (id) => {
             </button>
             <p style={styles.pageLabel}>Calendar</p>
           </div>
-          <div style={styles.topNavRight}>
+          <div className="cal-top-nav-right" style={styles.topNavRight}>
             <div style={styles.tabGroup}>
               {["Personal", "Class"].map((tab) => (
                 <button
@@ -350,7 +401,7 @@ const handleDeleteEvent = (id) => {
         </nav>
 
         <main style={styles.main}>
-          <div style={styles.calHeader}>
+          <div className="cal-header" style={styles.calHeader}>
             <div style={styles.calHeaderLeft}>
               <div
                 style={{
@@ -430,7 +481,7 @@ const handleDeleteEvent = (id) => {
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
           </div>
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div className="cal-modal-row" style={{ display: "flex", gap: "12px" }}>
             <div style={{ flex: 1 }}>
               <label style={styles.label}>Date *</label>
               <input
@@ -450,7 +501,7 @@ const handleDeleteEvent = (id) => {
               />
             </div>
           </div>
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div className="cal-modal-row" style={{ display: "flex", gap: "12px" }}>
             <div style={{ flex: 1 }}>
               <label style={styles.label}>Location</label>
               <input
