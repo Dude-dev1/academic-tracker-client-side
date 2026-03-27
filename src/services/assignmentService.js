@@ -12,13 +12,18 @@ const assignmentService = {
   },
 
   createAssignment: async (assignmentData) => {
-    const response = await api.post("/assignments", assignmentData);
+    const isFormData = assignmentData instanceof FormData;
+    const response = await api.post("/assignments", assignmentData, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {}
+    });
     return response.data;
   },
 
   updateAssignment: async (id, assignmentData) => {
-    const response = await api.put(`/assignments/${id}`, assignmentData);
-    return response.data;
+    const isFormData = assignmentData instanceof FormData;
+    const response = await api.put(`/assignments/${id}`, assignmentData, {
+      headers: isFormData ? { "Content-Type": "multipart/form-data" } : {}
+    });
   },
 
   deleteAssignment: async (id) => {

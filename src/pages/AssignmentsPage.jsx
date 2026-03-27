@@ -95,12 +95,19 @@ function ActionDropdown({ onClose, onDelete, onEdit, row, onComplete }) {
   );
 }
 
-function AssignmentRow({ row, onDelete, onEdit }) {
+function AssignmentRow({ row, onDelete, onEdit, onView }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <tr style={styles.row}>
+    <tr style={{ ...styles.row, cursor: "pointer" }} onClick={() => onView && onView(row)}>
       <td style={styles.titleCell}>{row.title}</td>
+      <td style={styles.dateCell}>
+        {row.attachmentUrl ? (
+          <a href={row.attachmentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#2563EB", textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>View</a>
+        ) : (
+          <span style={{ color: "#9CA3AF" }}>None</span>
+        )}
+      </td>
       <td style={styles.dateCell}>
         {new Date(row.dueDate).toLocaleDateString("en-US", {
           month: "short",
@@ -121,7 +128,7 @@ function AssignmentRow({ row, onDelete, onEdit }) {
         </span>
       </td>
       <td style={{ position: "relative" }}>
-        <button onClick={() => setOpen((v) => !v)} style={styles.actionBtn}>
+        <button onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }} style={styles.actionBtn}>
           •••
         </button>
         {open && (
@@ -157,7 +164,9 @@ export default function AssignmentsPage() {
   const [newDueDate, setNewDueDate] = useState("");
   const [newCourseId, setNewCourseId] = useState("");
   const [newGroup, setNewGroup] = useState("All");
+  const [newFile, setNewFile] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [viewAssignment, setViewAssignment] = useState(null);
 
   const { user } = useAuth();
   const isClass = activeTab === "Class";
@@ -210,13 +219,15 @@ export default function AssignmentsPage() {
   const handleSave = async () => {
     if (!newTitle || !newDueDate) return;
     try {
-      const payload = {
-        title: newTitle,
-        dueDate: newDueDate,
-        group: newGroup,
-      };
+      const payload = new FormData();
+      payload.append("title", newTitle);
+      payload.append("dueDate", newDueDate);
+      payload.append("group", newGroup);
       if (newCourseId) {
-        payload.courseId = newCourseId;
+        payload.append("courseId", newCourseId);
+      }
+      if (newFile) {
+        payload.append("attachment", newFile);
       }
 
       if (editingId) {
@@ -432,6 +443,7 @@ export default function AssignmentsPage() {
               <thead>
                 <tr style={styles.thead}>
                   <th style={styles.th}>Title</th>
+                  <th style={styles.th}>Attachment</th>
                   <th style={styles.th}>Due Date</th>
                   <th style={styles.th}>Group</th>
                   <th style={styles.th}>Status</th>
@@ -442,7 +454,7 @@ export default function AssignmentsPage() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       style={{
                         padding: "20px",
                         textAlign: "center",
@@ -455,7 +467,7 @@ export default function AssignmentsPage() {
                 ) : displayData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       style={{
                         padding: "20px",
                         textAlign: "center",
@@ -472,6 +484,7 @@ export default function AssignmentsPage() {
                       row={row}
                       onDelete={handleDelete}
                       onEdit={openEditModal}
+                      onView={setViewAssignment}
                     />
                   ))
                 )}
@@ -598,9 +611,38 @@ export default function AssignmentsPage() {
               <option value="Group 1">Group 1</option>
               <option value="Group 2">Group 2</option>
             </select>
-          </div>
-          <button
-            onClick={handleSave}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  color: "#374151",
+                }}
+              >
+                Attachment (Image / PDF)
+              </label>
+              <input
+                type="file"
+                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setNewFile(e.target.files[0]);
+                  } else {
+                    setNewFile(null);
+                  }
+                }}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #D1D5DB",
+                  background: "#fff",
+                }}
+              />
+            </div>
+            <button
+              onClick={handleSave}
             style={{
               marginTop: "16px",
               padding: "10px",
@@ -615,6 +657,54 @@ export default function AssignmentsPage() {
             Save Assignment
           </button>
         </div>
+      </Modal>
+
+      
+      
+
+
+      
+
+
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+      
+      <Modal isOpen={!!viewAssignment} onClose={() => setViewAssignment(null)} title="Assignment Details">
+        {viewAssignment && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "15px", color: "#374151" }}>
+            <p><strong>Title:</strong> {viewAssignment.title}</p>
+            {viewAssignment.courseId && <p><strong>Course:</strong> {typeof viewAssignment.courseId === "object" ? (viewAssignment.courseId.name || viewAssignment.courseId.code) : viewAssignment.courseId}</p>}
+            <p><strong>Due Date:</strong> {new Date(viewAssignment.dueDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+            <p><strong>Group:</strong> {viewAssignment.group || "All"}</p>
+            <p><strong>Status:</strong> {viewAssignment.status}</p>
+            <p><strong>Points:</strong> {viewAssignment.points || 100}</p>
+            {viewAssignment.description && <p><strong>Description:</strong> {viewAssignment.description}</p>}
+            {viewAssignment.attachmentUrl && (
+              <p><strong>Attachment:</strong> <a href={viewAssignment.attachmentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#2563EB", textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>View File</a></p>
+            )}
+            
+            <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setViewAssignment(null); }}
+                style={{ padding: "8px 16px", background: "#f3f4f6", color: "#374151", borderRadius: "6px", border: "1px solid #d1d5db", cursor: "pointer", fontWeight: "500" }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <ConfirmModal
