@@ -37,7 +37,7 @@ function ActionDropdown({ onClose, onDelete, onEdit, row, onComplete }) {
   }, [onClose]);
 
   return (
-    <div ref={ref} style={styles.dropdown}>
+    <div ref={ref} style={styles.dropdown} onClick={(e) => e.stopPropagation()}>
       {[
         {
           label: "Edit",
@@ -84,7 +84,10 @@ function ActionDropdown({ onClose, onDelete, onEdit, row, onComplete }) {
       ].map(({ label, icon, red, onClick }) => (
         <button
           key={label}
-          onClick={onClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(e);
+          }}
           style={{ ...styles.dropdownItem, color: red ? "#ef4444" : undefined }}
         >
           {icon}
@@ -127,7 +130,7 @@ function AssignmentRow({ row, onDelete, onEdit, onView }) {
           {statusLabel(row.status)}
         </span>
       </td>
-      <td style={{ position: "relative" }}>
+      <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
         <button onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }} style={styles.actionBtn}>
           •••
         </button>
