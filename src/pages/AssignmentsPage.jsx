@@ -302,6 +302,26 @@ export default function AssignmentsPage() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         tr:hover td { background: #F9FAFB; }
+
+        /* Mobile overrides */
+        @media (max-width: 768px) {
+          .assignments-header-mobile {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .filters-mobile {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .search-box-mobile {
+            margin-left: 0 !important;
+            width: 100% !important;
+          }
+          .table-wrapper {
+            overflow-x: auto !important;
+          }
+        }
       `}</style>
 
       <Sidebar sidebarOpen={sidebarOpen} />
@@ -350,7 +370,7 @@ export default function AssignmentsPage() {
         {/* PAGE CONTENT */}
         <main style={styles.main}>
           {/* Page Header */}
-          <div style={styles.pageHeader}>
+          <div className="assignments-header-mobile" style={styles.pageHeader}>
             <div style={styles.pageHeaderLeft}>
               <div style={styles.assignmentBadge}>
                 <svg
@@ -395,17 +415,19 @@ export default function AssignmentsPage() {
           </div>
 
           {/* Filters */}
-          <div style={styles.filters}>
-            <button style={styles.filterPillBlue}>All Assignments</button>
-            <button
-              style={styles.filterPillPurple}
-              onClick={() =>
-                setSortBy((prev) => (prev === "dueDate" ? "group" : "dueDate"))
-              }
-            >
-              Sort : {sortBy === "dueDate" ? "Due Date" : "Group"}
-            </button>
-            <div style={styles.searchBox}>
+          <div className="filters-mobile" style={styles.filters}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <button style={styles.filterPillBlue}>All Assignments</button>
+              <button
+                style={styles.filterPillPurple}
+                onClick={() =>
+                  setSortBy((prev) => (prev === "dueDate" ? "group" : "dueDate"))
+                }
+              >
+                Sort : {sortBy === "dueDate" ? "Due Date" : "Group"}
+              </button>
+            </div>
+            <div className="search-box-mobile" style={styles.searchBox}>
               <svg
                 width="13"
                 height="13"
@@ -427,7 +449,7 @@ export default function AssignmentsPage() {
                   outline: "none",
                   fontSize: "12px",
                   color: "#374151",
-                  width: "120px",
+                  width: "100%",
                   background: "transparent",
                 }}
               />
@@ -435,7 +457,7 @@ export default function AssignmentsPage() {
           </div>
 
           {/* Table */}
-          <div style={styles.tableWrap}>
+          <div className="table-wrapper" style={styles.tableWrap}>
             <table style={styles.table}>
               <thead>
                 <tr style={styles.thead}>
