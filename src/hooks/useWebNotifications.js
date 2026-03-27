@@ -29,7 +29,7 @@ export default function useWebNotifications() {
         const [assignmentsRes, announcementsRes, eventsRes] = await Promise.all([
           assignmentService.getAssignments(),
           announcementService.getAnnouncements(),
-          calendarEventService.getUserEvents()
+          calendarEventService.getEvents()
         ]);
 
         const assignments = assignmentsRes?.data || assignmentsRes || [];

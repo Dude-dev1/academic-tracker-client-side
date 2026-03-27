@@ -5,6 +5,7 @@ import ConfirmModal from "../components/ui/ConfirmModal";
 import Sidebar from "../components/ui/Sidebar";
 import assignmentService from "../services/assignmentService";
 import * as courseService from "../services/courseService";
+import { useToast } from "../context/ToastContext";
 
 function statusStyle(status) {
   if (status === "open") return { background: "#D1FAE5", color: "#065F46" };
