@@ -32,6 +32,29 @@ export default function ClassInfoPage() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile overrides */
+        @media (max-width: 640px) {
+          .class-main {
+            padding: 16px !important;
+            width: 100% !important;
+          }
+          .class-top-nav {
+            padding: 12px 16px !important;
+          }
+          .class-card {
+            padding: 16px !important;
+            border-radius: 12px !important;
+          }
+          .course-info-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .invite-row {
+            gap: 6px !important;
+          }
+        }
       `}</style>
 
       <Sidebar sidebarOpen={sidebarOpen} />
@@ -39,7 +62,7 @@ export default function ClassInfoPage() {
       {/* MAIN CONTENT */}
       <div style={styles.content}>
         {/* TOP NAV */}
-        <nav style={styles.topNav}>
+        <nav className="class-top-nav" style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <button className="mobile-hide" onClick={() => setSidebarOpen((v) => !v)} style={styles.toggleBtn}>
               <svg
@@ -63,7 +86,7 @@ export default function ClassInfoPage() {
         </nav>
 
         {/* PAGE CONTENT */}
-        <main style={styles.main}>
+        <main className="class-main" style={styles.main}>
           {/* Page Header */}
           <div style={styles.pageHeader}>
             <div style={styles.classBadge}>
@@ -84,8 +107,8 @@ export default function ClassInfoPage() {
           </div>
 
           {/* Course Card */}
-          <div style={styles.card}>
-            <div style={styles.courseCard}>
+          <div className="class-card" style={styles.card}>
+            <div className="course-flex" style={styles.courseCard}>
               <div style={styles.courseIcon}>
                 <svg
                   width="26"
@@ -100,7 +123,7 @@ export default function ClassInfoPage() {
                 </svg>
               </div>
               <div style={styles.courseInfo}>
-                <div style={styles.courseInfoHeader}>
+                <div className="course-info-header" style={styles.courseInfoHeader}>
                   <div>
                     <p style={styles.courseName}>Financial Accounting I</p>
                     <p style={styles.courseCode}>
@@ -122,7 +145,7 @@ export default function ClassInfoPage() {
                     Edit
                   </button>
                 </div>
-                <div style={styles.courseDescRow}>
+                <div className="desc-flex" style={styles.courseDescRow}>
                   <span style={styles.courseDescLabel}>Description:</span>
                   <span style={styles.courseDescText}>
                     This is an introductory course designed to create awareness
@@ -134,12 +157,12 @@ export default function ClassInfoPage() {
           </div>
 
           {/* Invite Card */}
-          <div style={styles.card}>
+          <div className="class-card" style={styles.card}>
             <p style={styles.cardLabel}>Invite</p>
 
             {/* Invite Link */}
             <p style={styles.inviteSubLabel}>Invite Link</p>
-            <div style={styles.inviteRow}>
+            <div className="invite-row" style={styles.inviteRow}>
               <span style={styles.inviteLink}>{inviteLink}</span>
               <button
                 style={{
@@ -168,7 +191,7 @@ export default function ClassInfoPage() {
             <p style={{ ...styles.inviteSubLabel, marginTop: "14px" }}>
               Class Code
             </p>
-            <div style={styles.inviteRow}>
+            <div className="invite-row" style={styles.inviteRow}>
               <span
                 style={{
                   ...styles.inviteLink,
@@ -219,7 +242,7 @@ export default function ClassInfoPage() {
           </div>
 
           {/* Danger Zone */}
-          <div style={styles.dangerZone}>
+          <div className="class-card" style={styles.dangerZone}>
             <p style={styles.dangerLabel}>Danger Zone</p>
             <button style={styles.archiveBtn}>Archive Class</button>
             <button style={styles.deleteBtn}>Delete Class</button>
@@ -343,6 +366,8 @@ const styles = {
     padding: "24px 28px",
     flex: 1,
     maxWidth: "680px",
+    margin: "0 auto",
+    width: "100%",
     animation: "fadeUp 0.4s ease both",
   },
   pageHeader: { marginBottom: "24px" },

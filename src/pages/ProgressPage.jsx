@@ -218,8 +218,6 @@ export default function ProgressPage() {
     if (user) fetchData();
   }, [user]);
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading progress...</div>;
-
   // Derived stats
   const isFirstTimeUser = courses.length === 0 && assignments.length === 0;
   const totalAssigned = assignments.length;
@@ -245,6 +243,13 @@ export default function ProgressPage() {
       <div style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
+            <button className="mobile-hide" onClick={() => setIsSidebarOpen((v) => !v)} style={styles.toggleBtn}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
             <p style={styles.pageLabel}>Progress</p>
           </div>
           <div className="topNavRight" style={styles.topNavRight}>
@@ -268,8 +273,24 @@ export default function ProgressPage() {
         </nav>
 
         <main style={styles.main}>
-          {/* Stats Row — always visible */}
-          <div style={styles.statsRow}>
+          <div style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: "24px", fontWeight: "700", color: "#111827", marginBottom: "4px" }}>
+                Progress Overview
+              </h1>
+              <p style={{ fontSize: "14px", color: "#6B7280" }}>
+                Track your course progress and assignment completion over time.
+              </p>
+            </div>
+          </div>
+          {loading ? (
+            <div style={styles.loadingSpinner}>
+              Loading progress...
+            </div>
+          ) : (
+            <>
+              {/* Stats Row — always visible */}
+              <div style={styles.statsRow}>
             {[
               {
                 label: "Overall completion",
@@ -462,6 +483,8 @@ export default function ProgressPage() {
               </div>
             </div>
           )}
+            </>
+          )}
         </main>
       </div>
     </div>
@@ -579,6 +602,14 @@ const styles = {
     justifyContent: "center",
   },
   main: { padding: "32px", flex: 1, animation: "fadeUp 0.4s ease both" },
+  loadingSpinner: {
+    display: "flex",
+    justifyContent: "center",
+    padding: "40px",
+    marginTop: "20vh",
+    color: "#6B7280",
+    fontSize: "14px",
+  },
   statsRow: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
