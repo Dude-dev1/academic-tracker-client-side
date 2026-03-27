@@ -2,6 +2,8 @@ import { useState } from "react";
 import chat1 from "../assets/chat-1.jpg";
 import chat2 from "../assets/chat-2.jpg";
 import chat3 from "../assets/chat-3.jpg";
+import chat4 from "../assets/chat-4.jpg";
+import chat5 from "../assets/chat-5.jpg";
 
 const Logo = () => (
   <div style={styles.logoRow}>
@@ -166,7 +168,6 @@ export default function LandingPage() {
           
           <div style={styles.chatGrid}>
             <div style={{...styles.chatCard, transform: 'rotate(-2deg)'}}>
-              {/* Replace these src paths with the actual paths to the images you uploaded */}
               <img src={chat1} alt="Student asking for assignments" style={styles.chatImg} />
             </div>
             <div style={{...styles.chatCard, transform: 'rotate(1deg)', marginTop: '20px'}}>
@@ -174,6 +175,12 @@ export default function LandingPage() {
             </div>
             <div style={{...styles.chatCard, transform: 'rotate(-1deg)'}}>
               <img src={chat3} alt="Student saying approaching deadlines" style={styles.chatImg} />
+            </div>
+            <div style={{...styles.chatCard, transform: 'rotate(2deg)', marginTop: '15px'}}>
+              <img src={chat4} alt="Student asking about next task" style={styles.chatImg} />
+            </div>
+            <div style={{...styles.chatCard, transform: 'rotate(-3deg)', marginTop: '10px'}}>
+              <img src={chat5} alt="Student missed a deadline" style={styles.chatImg} />
             </div>
           </div>
         </div>
@@ -425,25 +432,29 @@ const styles = {
 
   // YOU ASKED SECTION
   aboutSection: {
-    padding: "100px 80px",
+    padding: "50px 40px",
     background: "#fff",
     display: "flex",
     justifyContent: "center",
     textAlign: "center"
   },
   aboutContent: {
-    maxWidth: "1000px",
+    maxWidth: "1200px",
     width: "100%",
   },
   chatGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "30px",
-    marginTop: "60px",
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: "20px",
+    marginTop: "40px",
     alignItems: "center"
   },
   chatCard: {
-    padding: "12px",
+    flex: "1 1 18%",
+    minWidth: "200px",
+    maxWidth: "260px",
+    padding: "10px",
     background: "#f9fafb",
     borderRadius: "16px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
