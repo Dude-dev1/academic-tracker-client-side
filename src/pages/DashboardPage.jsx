@@ -950,7 +950,7 @@ const styles = {
   welcomeSub: { fontSize: "13px", color: "#6B7280", marginTop: "4px" },
   onboardingGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "20px",
   },
   stepsTitle: {
@@ -1067,7 +1067,7 @@ const styles = {
   },
   statsRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(0,1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "12px",
     marginBottom: "20px",
   },
@@ -1245,14 +1245,14 @@ const styles = {
   announcementTime: { fontSize: "11px", color: "#9CA3AF" },
   bottomGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "20px",
     marginBottom: "32px",
   },
   assignmentList: { display: "flex", flexDirection: "column", gap: "20px" },
   assignmentRow: {
     display: "grid",
-    gridTemplateColumns: "1fr auto",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gridTemplateRows: "auto auto",
     gap: "6px",
     paddingBottom: "20px",

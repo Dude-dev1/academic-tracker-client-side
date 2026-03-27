@@ -264,12 +264,12 @@ const Sidebar = ({ sidebarOpen = true }) => {
     },
     sidebar: {
       position: "fixed",
-      top: "16px",
-      left: "16px",
-      height: "calc(100vh - 32px)",
+      top: "0",
+      left: "0",
+      height: "100vh",
       background: "#fff",
-      borderRadius: "24px",
-      boxShadow: "0 10px 40px rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.03)",
+      borderRadius: "0",
+      boxShadow: "2px 0 10px rgba(0,0,0,0.05)",
       display: "flex",
       flexDirection: "column",
       transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -537,17 +537,7 @@ const Sidebar = ({ sidebarOpen = true }) => {
              <span style={mStyles.navLabel}>Logout</span>
           </button>
 
-          <div style={mStyles.darkModeSwitch} title={!expanded ? "Dark mode" : ""}>
-             <div style={{minWidth: "18px", display: "flex", alignItems: "center", justifyContent: "center"}}>
-               <svg fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18" viewBox="0 0 24 24">
-                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-               </svg>
-             </div>
-             {expanded && <span style={{fontSize: "13px", fontWeight: "600", marginLeft: "12px", marginRight: "auto"}}>Dark mode</span>}
-             <div style={mStyles.switchTrack}>
-                <div style={mStyles.switchThumb}></div>
-             </div>
-          </div>
+          {/* Dark mode switch removed as requested */}
         </div>
       </aside>
     </>

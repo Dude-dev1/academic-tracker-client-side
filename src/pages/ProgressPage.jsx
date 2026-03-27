@@ -591,7 +591,7 @@ const styles = {
   main: { padding: "32px", flex: 1, animation: "fadeUp 0.4s ease both" },
   statsRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0,1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "12px",
     marginBottom: "16px",
   },
@@ -613,7 +613,7 @@ const styles = {
   statSub: { fontSize: "11px", color: "#9CA3AF", marginTop: "4px" },
   chartsGrid: {
     display: "grid",
-    gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "14px",
     marginBottom: "16px",
   },

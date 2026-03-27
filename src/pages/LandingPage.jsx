@@ -555,7 +555,7 @@ const styles = {
   },
   footerGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "40px",
     marginBottom: "40px",
   },
