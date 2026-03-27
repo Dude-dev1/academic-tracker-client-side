@@ -83,10 +83,7 @@ export default function ProfilePage() {
       <div style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
-            <button
-              onClick={() => setSidebarOpen((v) => !v)}
-              style={styles.toggleBtn}
-            >
+            <button className="mobile-hide" onClick={() => setSidebarOpen((v) => !v)} style={styles.toggleBtn}>
               <svg
                 width="18"
                 height="18"
@@ -103,7 +100,7 @@ export default function ProfilePage() {
             <p style={styles.pageLabel}>Profile</p>
           </div>
           <div style={styles.topNavRight}>
-            <div style={styles.avatar}>{initials}</div>
+            <div className="mobile-hide" style={styles.avatar}>{initials}</div>
           </div>
         </nav>
 

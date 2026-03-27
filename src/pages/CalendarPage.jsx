@@ -317,10 +317,7 @@ const handleDeleteEvent = (id) => {
       <div style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
-            <button
-              onClick={() => setSidebarOpen((v) => !v)}
-              style={styles.toggleBtn}
-            >
+            <button className="mobile-hide" onClick={() => setSidebarOpen((v) => !v)} style={styles.toggleBtn}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="21" y2="12" />
@@ -348,7 +345,7 @@ const handleDeleteEvent = (id) => {
                 </button>
               ))}
             </div>
-            <div style={styles.avatar}>{initials}</div>
+            <div className="mobile-hide" style={styles.avatar}>{initials}</div>
           </div>
         </nav>
 

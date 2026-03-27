@@ -75,7 +75,7 @@ export default function SettingsPage() {
                 </svg>
               </span>
             </button>
-            <div style={styles.avatar}>
+            <div className="mobile-hide" style={styles.avatar}>
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
           </div>

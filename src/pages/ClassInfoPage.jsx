@@ -41,10 +41,7 @@ export default function ClassInfoPage() {
         {/* TOP NAV */}
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
-            <button
-              onClick={() => setSidebarOpen((v) => !v)}
-              style={styles.toggleBtn}
-            >
+            <button className="mobile-hide" onClick={() => setSidebarOpen((v) => !v)} style={styles.toggleBtn}>
               <svg
                 width="18"
                 height="18"
@@ -61,7 +58,7 @@ export default function ClassInfoPage() {
             <p style={styles.pageLabel}>Class Info</p>
           </div>
           <div style={styles.topNavRight}>
-            <div style={styles.avatar}>{initials}</div>
+            <div className="mobile-hide" style={styles.avatar}>{initials}</div>
           </div>
         </nav>
 

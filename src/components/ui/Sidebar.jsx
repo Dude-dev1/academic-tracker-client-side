@@ -437,7 +437,7 @@ const Sidebar = ({ sidebarOpen = true }) => {
         }
       `}</style>
       
-      {isMobile && <div style={{flexShrink: 0, width: "112px", transition: "width 0.35s"}} />}
+      {isMobile && <div style={{flexShrink: 0, width: "60px", transition: "width 0.35s"}} />}
 
       {expanded && (
         <div 

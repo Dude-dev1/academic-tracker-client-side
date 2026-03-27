@@ -273,7 +273,7 @@ export default function ProgressPage() {
                 </button>
               ))}
             </div>
-            <div style={styles.avatar}>{initials}</div>
+            <div className="mobile-hide" style={styles.avatar}>{initials}</div>
           </div>
         </nav>
 
