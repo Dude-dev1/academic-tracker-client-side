@@ -51,9 +51,7 @@ export default function AnnouncementsPage() {
           prev.map((a) => (a._id === editingId || a.id === editingId ? updatedAnn : a))
         );
       } else {
-        await announcementService.createAnnouncement({
-    // added dynamically via api, but triggering toast locally works before promise resolves if we want, or better after await
-    // added dynamically via api, but triggering toast locally works before promise resolves if we want, or better after await
+        const newAnn = await announcementService.createAnnouncement({
           title: newTitle,
           body: newBody,
           pinned: false,
@@ -162,7 +160,7 @@ export default function AnnouncementsPage() {
               <p style={styles.pageTitle}>Announcements</p>
             </div>
             
-            {user?.role === "instructor" && (
+            {(user?.role === "instructor" || user?.role === "admin") && (
               <button style={styles.newBtn} onClick={() => {
                 setEditingId(null);
                 setNewTitle("");
@@ -186,22 +184,24 @@ export default function AnnouncementsPage() {
           </div>
 
           {/* Instructor Notice */}
-          <div style={styles.adminNotice}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#92400E"
-              strokeWidth="2"
-              style={{ flexShrink: 0 }}
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            Only course instructors can post and manage announcements.
-          </div>
+          {user?.role !== "instructor" && user?.role !== "admin" && (
+            <div style={styles.adminNotice}>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#92400E"
+                strokeWidth="2"
+                style={{ flexShrink: 0 }}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              Only course instructors can post and manage announcements.
+            </div>
+          )}
 
           {/* Filters */}
           <div style={styles.filters}>
@@ -262,7 +262,7 @@ export default function AnnouncementsPage() {
                     <span style={styles.annDate}>
                       {ann.createdAt ? `Posted ${new Date(ann.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ann.date}
                     </span>
-                    {user?.role === "instructor" && (
+                    {(user?.role === "instructor" || user?.role === "admin" || (ann.userId && (ann.userId === user?._id || ann.userId === user?.id))) && (
                       <div style={styles.annActions}>
                         <button 
                           style={styles.editBtn} 
