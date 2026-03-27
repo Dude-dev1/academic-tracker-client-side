@@ -11,235 +11,264 @@ const Logo = () => (
 );
 
 export default function LandingPage() {
-  const [email, setEmail] = useState("");
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
-  const slides = [
+  const features = [
     {
-      step: "1 of 3",
-      title: "Add and track assignments",
-      desc: "Keep all your assignments organized at one glance",
+      title: "Add Assignments",
+      desc: "Automatically organize all your upcoming tasks and assignments at one glance.",
+      detailedDesc: "Input assignment details rapidly such as title, course, due date, and priority level. The system automatically categorizes and sorts everything, ensuring you know exactly what needs your attention first without manual sorting.",
+      icon: (
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+           <path d="M9 11l3 3L22 4" />
+           <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+         </svg>
+      ),
+      active: false
     },
     {
-      step: "2 of 3",
-      title: "Monitor your deadlines",
-      desc: "Get notified before due dates so you're never caught off guard",
+      title: "Track Deadlines",
+      desc: "Get notified before due dates so you're never caught off guard or missing grades.",
+      detailedDesc: "Our built-in notification system alerts you days before a major assignment is due. You can customize visual cues and reminder times to fit your personal workflow and prevent any last-minute cramming sessions.",
+      icon: (
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+           <circle cx="12" cy="12" r="10"></circle>
+           <polyline points="12 6 12 12 16 14"></polyline>
+         </svg>
+      ),
+      active: true
     },
     {
-      step: "3 of 3",
-      title: "View your progress",
-      desc: "See how much you've completed and what's still pending",
+      title: "View Progress",
+      desc: "See how much you've completed and what's still pending for every course.",
+      detailedDesc: "Visualize your productivity directly from your dashboard. Track completion rates across different courses and give yourself a psychological boost by watching your pending to-do list shrink and your grades improve.",
+      icon: (
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+         </svg>
+      ),
+      active: false
     },
+    {
+      title: "Course Management",
+      desc: "Group assignments by classes to easily navigate your entire academic schedule.",
+      detailedDesc: "Keep your semesters tightly organized by grouping related assignments under specific course labels. Add syllabus information, store instructor details, and seamlessly monitor your overall grade projections per class.",
+      icon: (
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+         </svg>
+      ),
+      active: false
+    },
+    {
+      title: "Mobile Optimized",
+      desc: "Access your dashboard smoothly on any device, right from your phone.",
+      detailedDesc: "Whether you are waiting for the bus or walking in between lectures, check your upcoming tasks effortlessly. Our entirely fluid, responsive design guarantees a smooth, app-like experience on any smartphone or tablet.",
+      icon: (
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+           <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>
+         </svg>
+      ),
+      active: false
+    },
+    {
+      title: "Schedule Planner",
+      desc: "Plan your entire week or month in advance using the built-in calendar.",
+      detailedDesc: "Integrate all of your personal and academic tasks into a centralized calendar view. Drag and drop assignments to plan your rigorous study sessions effectively and strictly balance your academic workload with personal time.",
+      icon: (
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+         </svg>
+      ),
+      active: false
+    }
   ];
 
   return (
     <div style={styles.root}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:ital,wght@0,700;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; }
+        body { font-family: 'DM Sans', sans-serif; background: #FAFBFC; }
+        
+        /* Utility Classes for Hover Effects */
+        .feature-card { transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .btn-hover { transition: all 0.2s ease; }
+        .btn-hover:hover { opacity: 0.9; transform: scale(1.02); }
+        .nav-link:hover { color: #2563EB !important; }
+        
+        .diagonal-bg::before {
+          content: "";
+          position: absolute;
+          top: 0; right: 0;
+          width: 50%; height: 100%;
+          background: #EFF6FF;
+          z-index: -1;
+          clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-        .nav-link:hover { color: #2563EB !important; }
-        .social-icon:hover { color: #2563EB !important; }
-        .footer-link:hover { color: #2563EB !important; }
       `}</style>
-
+      
       {/* NAVBAR */}
       <nav style={styles.nav}>
         <Logo />
         <div style={styles.navLinks}>
           <a href="#" className="nav-link" style={styles.navLink}>Home</a>
           <a href="#about" className="nav-link" style={styles.navLink}>About</a>
-          <a href="#contact" className="nav-link" style={styles.navLink}>Contact</a>
           <a href="/login" className="nav-link" style={styles.navLink}>Login</a>
-          <a href="/signup" className="nav-link" style={styles.navLink}>Sign Up</a>
+        </div>
+        <div style={styles.navActions}>
+          <a href="/signup" style={styles.navBtn} className="btn-hover">Sign Up</a>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section style={styles.hero}>
+      {/* HERO SECTION */}
+      <section style={styles.hero} className="diagonal-bg">
         <div style={styles.heroLeft}>
           <h1 style={styles.heroTitle}>
-            Stay on top of your assignments — without stress.
+            Industry Leading<br/>
+            <span style={{color: '#EAB308'}}>Student Planner.</span>
           </h1>
           <p style={styles.heroSubtitle}>
-            Track deadlines, monitor progress, and keep up with class updates in one simple place.
+            Track deadlines, monitor progress, and keep up with class updates in one simple place. Stay organized effortlessly.
           </p>
-          <a href="/signup" style={styles.ctaBtn}>Get Started</a>
-          <p style={styles.heroNote}>No pressure. No clutter. Just clarity.</p>
+          <div style={styles.heroButtons}>
+            <a href="/signup" style={styles.primaryBtn} className="btn-hover">Get Started</a>
+            <a href="#about" style={styles.secondaryBtnBg} className="btn-hover">
+               <span style={styles.iconCircle}>▶</span> Learn More
+            </a>
+          </div>
         </div>
         <div style={styles.heroRight}>
-          <div style={styles.heroIllustration}>
-            <div style={styles.illustrationCard}>
-              <div style={styles.illustrationBar} />
-              <div style={{...styles.illustrationBar, width: "70%", background: "#10b981"}} />
-              <div style={{...styles.illustrationBar, width: "85%"}} />
-              <div style={{...styles.illustrationBar, width: "50%", background: "#f59e0b"}} />
-            </div>
-            <div style={styles.illustrationBadge}>
-              <span style={styles.badgeDot} />
-              4 due soon
-            </div>
+          <div style={styles.imageGrid}>
+            <div style={{...styles.imgBox, gridColumn: "1 / span 2", gridRow: "1 / span 2", height: "240px", backgroundImage: "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800')", backgroundSize: "cover", backgroundPosition: "center"}}></div>
+            <div style={{...styles.imgBox, height: "115px", backgroundImage: "url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400')", backgroundSize: "cover"}}></div>
+            <div style={{...styles.imgBox, height: "115px", background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "24px", fontWeight: "bold"}}>+12k</div>
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section style={styles.features}>
-        <h2 style={styles.sectionTitle}>Everything you need, in one place</h2>
-        <p style={styles.sectionSubtitle}>Add assignments, follow deadlines, and keep track of what matters — without clutter</p>
-        <div style={styles.featureCards}>
-          {[
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="#EFF6FF"/>
-                  <path d="M8 10h10M8 16h16M8 22h6" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-              ),
-              label: "Add Assignments",
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="#EFF6FF"/>
-                  <circle cx="16" cy="16" r="7" stroke="#2563EB" strokeWidth="2"/>
-                  <path d="M16 12v4l2.5 2.5" stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              ),
-              label: "Track Deadlines",
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="#EFF6FF"/>
-                  <path d="M8 22l4-5 4 3 4-7 4 4" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              ),
-              label: "View Progress",
-            },
-          ].map(({ icon, label }, i) => (
-            <div key={i} style={styles.featureCard}>
-              {i < 2 && <div style={styles.featureArrow}>→</div>}
-              <div style={styles.featureIcon}>{icon}</div>
-              <p style={styles.featureLabel}>{label}</p>
+      {/* ABOUT SECTION */}
+      <section style={styles.aboutSection} id="about">
+        <div style={styles.aboutContent}>
+          <h2 style={styles.sectionTitle}>About Agenda</h2>
+          <p style={styles.sectionSubtitle}>
+            Agenda is built for students who want to take control of their academic life. We simplify the chaos of assignments, deadlines, and courses into one beautifully organized dashboard so you can focus on learning, not tracking.
+          </p>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS / FEATURES */}
+      <section style={styles.servicesSection}>
+        <div style={styles.sectionHeader}>
+          <h2 style={styles.sectionTitle}>How it works</h2>
+          <p style={styles.sectionSubtitle}>Add assignments, follow deadlines, and keep track of what matters — without clutter.</p>
+        </div>
+        
+        <div style={styles.servicesGrid}>
+          {features.map((feature, i) => (
+            <div key={i} className="feature-card" style={feature.active ? styles.activeCard : styles.card}>
+              <div style={feature.active ? styles.activeIconWrapper : styles.iconWrapper}>
+                {feature.icon}
+              </div>
+              <h3 style={feature.active ? styles.activeCardTitle : styles.cardTitle}>{feature.title}</h3>
+              <p style={feature.active ? styles.activeCardDesc : styles.cardDesc}>{feature.desc}</p>
+              <a 
+                href="#modal" 
+                onClick={(e) => { e.preventDefault(); setSelectedFeature(feature); }} 
+                style={feature.active ? styles.activeCardLink : styles.cardLink}
+              >
+                Know More →
+              </a>
             </div>
           ))}
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section style={styles.howItWorks}>
-        <h2 style={styles.sectionTitle}>How it works</h2>
-        <p style={styles.sectionSubtitle}>3 simple steps on how to stay organized</p>
-        <div style={styles.slideshowWrapper}>
-          <div style={styles.slideLeft}>
-            {slides.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => setCurrentSlide(i)}
-                style={{
-                  ...styles.slideDot,
-                  background: i === currentSlide ? "#2563EB" : "#E5E7EB",
-                  width: i === currentSlide ? "40px" : "12px",
-                }}
-              />
-            ))}
+      {/* REVIEWS SECTION */}
+      <section style={styles.darkSection}>
+        <div style={styles.darkSectionInner}>
+          <div style={styles.darkHeader}>
+             <h2 style={{...styles.sectionTitle, color: "#fff"}}>What Students Say</h2>
+             <p style={{...styles.sectionSubtitle, color: "#9CA3AF"}}>Join thousands of students who have organized their lives with us.</p>
           </div>
-          <div style={styles.slideContent}>
-            <p style={styles.slideStep}>Step {slides[currentSlide].step}</p>
-            <h3 style={styles.slideTitle}>{slides[currentSlide].title}</h3>
-            <p style={styles.slideDesc}>{slides[currentSlide].desc}</p>
-            <div style={styles.slideNav}>
-              <button
-                style={styles.slideBtn}
-                onClick={() => setCurrentSlide(v => Math.max(0, v - 1))}
-                disabled={currentSlide === 0}
-              >
-                ← Previous
-              </button>
-              <button
-                style={{...styles.slideBtn, ...styles.slideBtnPrimary}}
-                onClick={() => setCurrentSlide(v => Math.min(slides.length - 1, v + 1))}
-                disabled={currentSlide === slides.length - 1}
-              >
-                Next →
-              </button>
-            </div>
+          <div style={styles.pricingGrid}>
+             {[
+               { name: "Sarah L.", role: "Computer Science St.", text: "Agenda completely changed how I handle my coursework. No more missed deadines!" },
+               { name: "James T.", role: "Business Major", text: "The clean interface and progress tracking keep me motivated throughout the semester." },
+               { name: "Emily R.", role: "Design St.", text: "Finally an app that looks good and works perfectly for managing my crazy schedule." },
+             ].map((review, idx) => (
+                <div key={idx} style={styles.pricingCard}>
+                   <p style={styles.reviewText}>"{review.text}"</p>
+                   <div style={styles.reviewerInfo}>
+                     <div style={styles.reviewerAvatar}>{review.name[0]}</div>
+                     <div>
+                       <h4 style={styles.reviewerName}>{review.name}</h4>
+                       <span style={styles.reviewerRole}>{review.role}</span>
+                     </div>
+                   </div>
+                </div>
+             ))}
           </div>
         </div>
-      </section>
-
-      {/* CTA BANNER */}
-      <section style={styles.ctaBanner}>
-        <h2 style={styles.ctaBannerTitle}>Ready to get organized?</h2>
-        <p style={styles.ctaBannerSubtitle}>Join students who are staying on top of their assignments</p>
-        <a href="/signup" style={styles.ctaBannerBtn}>Make Your Account</a>
       </section>
 
       {/* FOOTER */}
       <footer style={styles.footer} id="contact">
         <div style={styles.footerGrid}>
-          {/* Brand */}
-          <div>
+          <div style={styles.footerColInfo}>
             <Logo />
-            <p style={styles.footerTagline}>Stay on top of your assignments without stress.</p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <p style={styles.footerHeading}>Quick Links</p>
-            {["Home", "About", "Courses", "Dashboard"].map(l => (
-              <a key={l} href="#" className="footer-link" style={styles.footerLink}>{l}</a>
-            ))}
-          </div>
-
-          {/* Contact */}
-          <div>
-            <p style={styles.footerHeading}>Contact Us</p>
-            <p style={styles.footerText}>📧webdev28@cs3.knust.edu.gh</p>
-            <p style={styles.footerText}>📞 000 000 0000</p>
-            <p style={styles.footerText}>📍 KNUST, Ghana</p>
-          </div>
-
-          {/* Follow + Newsletter */}
-          <div>
-            <p style={styles.footerHeading}>Follow Us</p>
-            <div style={styles.socialIcons}>
+            <p style={styles.footerDesc}>The modern way to manage student life. Stay on top of your assignments without stress.</p>
+            <div style={styles.socials}>
               {["f", "t", "in", "yt"].map(s => (
-                <span key={s} className="social-icon" style={styles.socialIcon}>{s}</span>
+                <span key={s} style={styles.socialCir}>{s}</span>
               ))}
             </div>
-            <p style={{...styles.footerHeading, marginTop: "16px"}}>Newsletter</p>
-            <div style={styles.newsletterRow}>
-              <input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                style={styles.newsletterInput}
-              />
-              <button style={styles.newsletterBtn}>Join</button>
-            </div>
           </div>
-        </div>
-
-        <div style={styles.footerBottom}>
-          <p style={styles.footerCopy}>© 2025 Agenda. All rights reserved.</p>
-          <div style={styles.footerBottomLinks}>
-            {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(l => (
-              <a key={l} href="#" className="footer-link" style={styles.footerSmallLink}>{l}</a>
+          <div style={styles.footerCol}>
+            <h4 style={styles.footerHeading}>Company</h4>
+            {["About Agenda", "Features", "Privacy Policy", "Terms of Service"].map(l => (
+              <a key={l} href="#" style={styles.footerLink}>{l}</a>
             ))}
+          </div>
+          <div style={styles.footerCol}>
+            <h4 style={styles.footerHeading}>Resources</h4>
+            {["Help Center", "Student Guides", "System Status"].map(l => (
+              <a key={l} href="#" style={styles.footerLink}>{l}</a>
+            ))}
+          </div>
+          <div style={styles.footerCol}>
+            <h4 style={styles.footerHeading}>Contact Us</h4>
+            <p style={styles.footerContactText}>Location: KNUST, Kumasi Ghana</p>
+            <p style={styles.footerContactText}>Email: webdev28@cs3.knust.edu.gh</p>
+            <p style={styles.footerContactText}>Phone: 000 000 0000</p>
           </div>
         </div>
       </footer>
+
+      {/* FEATURE MODAL */}
+      {selectedFeature && (
+        <div style={styles.modalOverlay} onClick={() => setSelectedFeature(null)}>
+          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <button style={styles.modalClose} onClick={() => setSelectedFeature(null)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div style={styles.modalIconWrapper}>
+              {selectedFeature.icon}
+            </div>
+            <h3 style={styles.modalTitle}>{selectedFeature.title}</h3>
+            <p style={styles.modalDesc}>{selectedFeature.detailedDesc}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -247,19 +276,19 @@ export default function LandingPage() {
 const styles = {
   root: {
     fontFamily: "'DM Sans', sans-serif",
-    background: "#ffffff",
-    color: "#111827",
+    position: "relative",
+    overflow: "hidden"
   },
-
-  // NAVBAR
+  
+  // NAV
   nav: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "16px 64px",
-    borderBottom: "1px solid #F3F4F6",
-    background: "#fff",
-    position: "sticky",
+    padding: "20px 80px",
+    background: "transparent",
+    position: "absolute",
+    width: "100%",
     top: 0,
     zIndex: 100,
   },
@@ -270,21 +299,35 @@ const styles = {
   },
   logoName: {
     fontFamily: "'Fraunces', serif",
-    fontSize: "20px",
+    fontSize: "22px",
     fontWeight: "700",
     color: "#2563EB",
-    letterSpacing: "-0.3px",
   },
   navLinks: {
     display: "flex",
-    gap: "32px",
+    gap: "40px",
   },
   navLink: {
-    fontSize: "14px",
-    fontWeight: "500",
+    fontSize: "15px",
+    fontWeight: "600",
     color: "#374151",
     textDecoration: "none",
-    transition: "color 0.15s",
+    transition: "color 0.2s",
+  },
+  navActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: "24px",
+  },
+  navBtn: {
+    background: "#2563EB",
+    color: "#fff",
+    padding: "10px 24px",
+    borderRadius: "30px",
+    textDecoration: "none",
+    fontWeight: "600",
+    fontSize: "14px",
+    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)",
   },
 
   // HERO
@@ -292,366 +335,376 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "80px 64px",
-    gap: "40px",
-    background: "#F8FAFF",
+    padding: "160px 80px 100px",
+    position: "relative",
+    minHeight: "80vh",
+    gap: "60px",
   },
   heroLeft: {
     flex: 1,
-    maxWidth: "520px",
-    animation: "fadeUp 0.5s ease both",
+    maxWidth: "500px"
   },
   heroTitle: {
     fontFamily: "'Fraunces', serif",
-    fontSize: "42px",
-    fontWeight: "700",
+    fontSize: "56px",
+    fontWeight: "800",
     color: "#111827",
-    lineHeight: "1.2",
-    marginBottom: "16px",
-    letterSpacing: "-1px",
+    lineHeight: "1.1",
+    marginBottom: "24px",
   },
   heroSubtitle: {
-    fontSize: "16px",
+    fontSize: "18px",
     color: "#6B7280",
     lineHeight: "1.6",
-    marginBottom: "28px",
+    marginBottom: "40px",
   },
-  ctaBtn: {
-    display: "inline-block",
-    background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+  heroButtons: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+  },
+  primaryBtn: {
+    background: "#2563EB",
     color: "#fff",
-    padding: "12px 28px",
-    borderRadius: "10px",
-    fontSize: "15px",
-    fontWeight: "600",
+    padding: "14px 32px",
+    borderRadius: "30px",
     textDecoration: "none",
-    boxShadow: "0 2px 12px rgba(37,99,235,0.30)",
-    marginBottom: "16px",
+    fontWeight: "600",
+    fontSize: "16px",
+    boxShadow: "0 4px 15px rgba(37, 99, 235, 0.3)",
   },
-  heroNote: {
-    fontSize: "13px",
-    color: "#9CA3AF",
-    marginTop: "8px",
+  secondaryBtnBg: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    textDecoration: "none",
+    fontWeight: "600",
+    color: "#111827",
+    fontSize: "16px",
+  },
+  iconCircle: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    background: "#fff",
+    color: "#2563EB",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    fontSize: "14px",
   },
   heroRight: {
     flex: 1,
-    display: "flex",
-    justifyContent: "center",
   },
-  heroIllustration: {
-    position: "relative",
-    animation: "float 3s ease-in-out infinite",
+  imageGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateRows: "repeat(2, 1fr)",
+    gap: "16px",
+    maxWidth: "500px",
+    marginLeft: "auto",
   },
-  illustrationCard: {
-    background: "#fff",
+  imgBox: {
     borderRadius: "16px",
-    padding: "24px",
-    boxShadow: "0 8px 40px rgba(37,99,235,0.12)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    width: "260px",
-  },
-  illustrationBar: {
-    height: "12px",
-    borderRadius: "6px",
-    background: "#2563EB",
-    width: "100%",
-  },
-  illustrationBadge: {
-    position: "absolute",
-    bottom: "-16px",
-    right: "-16px",
-    background: "#fff",
-    borderRadius: "10px",
-    padding: "8px 14px",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#374151",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
-  badgeDot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    background: "#f59e0b",
-    display: "inline-block",
+    overflow: "hidden",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
   },
 
-  // FEATURES
-  features: {
-    padding: "80px 64px",
-    textAlign: "center",
+  // ABOUT SECTION
+  aboutSection: {
+    padding: "80px",
     background: "#fff",
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center"
+  },
+  aboutContent: {
+    maxWidth: "800px",
+  },
+
+  // SERVICES
+  servicesSection: {
+    padding: "100px 80px",
+    background: "#FAFBFC",
+  },
+  sectionHeader: {
+    textAlign: "center",
+    marginBottom: "60px",
   },
   sectionTitle: {
     fontFamily: "'Fraunces', serif",
-    fontSize: "30px",
+    fontSize: "36px",
     fontWeight: "700",
     color: "#111827",
-    marginBottom: "8px",
-    letterSpacing: "-0.5px",
+    marginBottom: "16px",
   },
   sectionSubtitle: {
-    fontSize: "15px",
+    fontSize: "16px",
     color: "#6B7280",
-    marginBottom: "48px",
+    maxWidth: "600px",
+    margin: "0 auto",
+    lineHeight: "1.5",
   },
-  featureCards: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "0px",
-    flexWrap: "wrap",
+  servicesGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "30px",
+    maxWidth: "1100px",
+    margin: "0 auto",
   },
-  featureCard: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "12px",
-    padding: "32px 24px",
-    position: "relative",
-  },
-  featureArrow: {
-    position: "absolute",
-    right: "-16px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontSize: "20px",
-    color: "#D1D5DB",
-    zIndex: 1,
-  },
-  featureIcon: {
-    width: "64px",
-    height: "64px",
-    borderRadius: "16px",
-    background: "#EFF6FF",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  featureLabel: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#374151",
-  },
-
-  // HOW IT WORKS
-  howItWorks: {
-    padding: "80px 64px",
-    background: "#F8FAFF",
-    textAlign: "center",
-  },
-  slideshowWrapper: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "32px",
-    marginTop: "40px",
+  card: {
     background: "#fff",
     borderRadius: "20px",
-    padding: "40px",
-    maxWidth: "600px",
-    margin: "40px auto 0",
-    boxShadow: "0 4px 24px rgba(37,99,235,0.08)",
+    padding: "40px 30px",
+    border: "1px solid #F3F4F6",
   },
-  slideLeft: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    alignItems: "center",
+  activeCard: {
+    background: "linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)",
+    borderRadius: "20px",
+    padding: "40px 30px",
+    border: "1px solid transparent",
+    color: "#fff",
+    boxShadow: "0 20px 40px rgba(37, 99, 235, 0.2)",
   },
-  slideDot: {
-    height: "12px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-  },
-  slideContent: {
-    flex: 1,
-    textAlign: "left",
-  },
-  slideStep: {
-    fontSize: "12px",
-    fontWeight: "600",
+  iconWrapper: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "14px",
+    background: "#EFF6FF",
     color: "#2563EB",
-    marginBottom: "8px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: "24px",
   },
-  slideTitle: {
-    fontFamily: "'Fraunces', serif",
+  activeIconWrapper: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "14px",
+    background: "rgba(255,255,255,0.2)",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: "24px",
+  },
+  cardTitle: {
     fontSize: "20px",
     fontWeight: "700",
+    marginBottom: "16px",
     color: "#111827",
-    marginBottom: "8px",
   },
-  slideDesc: {
-    fontSize: "14px",
-    color: "#6B7280",
-    lineHeight: "1.6",
-    marginBottom: "20px",
-  },
-  slideNav: {
-    display: "flex",
-    gap: "10px",
-  },
-  slideBtn: {
-    padding: "8px 16px",
-    borderRadius: "8px",
-    border: "1.5px solid #E5E7EB",
-    background: "#fff",
-    fontSize: "13px",
-    fontWeight: "500",
-    color: "#374151",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  slideBtnPrimary: {
-    background: "#2563EB",
+  activeCardTitle: {
+    fontSize: "20px",
+    fontWeight: "700",
+    marginBottom: "16px",
     color: "#fff",
-    border: "none",
-    boxShadow: "0 2px 8px rgba(37,99,235,0.25)",
+  },
+  cardDesc: {
+    fontSize: "15px",
+    color: "#6b7280",
+    lineHeight: "1.6",
+    marginBottom: "24px",
+  },
+  activeCardDesc: {
+    fontSize: "15px",
+    color: "rgba(255,255,255,0.9)",
+    lineHeight: "1.6",
+    marginBottom: "24px",
+  },
+  cardLink: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#2563EB",
+    textDecoration: "none",
+  },
+  activeCardLink: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#fff",
+    textDecoration: "none",
   },
 
-  // CTA BANNER
-  ctaBanner: {
-    background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
-    padding: "80px 64px",
+  // DARK SECTION (REVIEWS)
+  darkSection: {
+    background: "#111827",
+    padding: "160px 80px",
+    marginTop: "-60px",
+  },
+  darkSectionInner: {
+    maxWidth: "1100px",
+    margin: "0 auto",
+  },
+  darkHeader: {
     textAlign: "center",
+    marginBottom: "60px",
   },
-  ctaBannerTitle: {
-    fontFamily: "'Fraunces', serif",
-    fontSize: "32px",
-    fontWeight: "700",
+  pricingGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "30px",
+  },
+  pricingCard: {
+    background: "#1F2937",
+    borderRadius: "20px",
+    padding: "40px",
+    border: "1px solid #374151",
+    transition: "transform 0.3s ease",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between"
+  },
+  reviewText: {
+    color: "#D1D5DB",
+    fontSize: "16px",
+    lineHeight: "1.6",
+    marginBottom: "32px",
+    fontStyle: "italic"
+  },
+  reviewerInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px"
+  },
+  reviewerAvatar: {
+    width: "48px",
+    height: "48px",
+    background: "#2563EB",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     color: "#fff",
-    marginBottom: "8px",
+    fontSize: "18px",
+    fontWeight: "700"
   },
-  ctaBannerSubtitle: {
-    fontSize: "15px",
-    color: "rgba(255,255,255,0.8)",
-    marginBottom: "28px",
-  },
-  ctaBannerBtn: {
-    display: "inline-block",
-    background: "#fff",
-    color: "#2563EB",
-    padding: "12px 28px",
-    borderRadius: "10px",
-    fontSize: "15px",
+  reviewerName: {
+    fontSize: "16px",
+    color: "#fff",
     fontWeight: "600",
-    textDecoration: "none",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+    marginBottom: "4px"
+  },
+  reviewerRole: {
+    fontSize: "14px",
+    color: "#9CA3AF"
   },
 
   // FOOTER
   footer: {
     background: "#111827",
-    padding: "60px 64px 32px",
-    color: "#fff",
+    padding: "80px 80px 40px",
+    borderTop: "1px solid #1F2937"
   },
   footerGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "40px",
-    marginBottom: "40px",
+    gridTemplateColumns: "2fr 1fr 1fr 1fr",
+    gap: "60px",
+    maxWidth: "1100px",
+    margin: "0 auto",
   },
-  footerTagline: {
-    fontSize: "13px",
+  footerColInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px"
+  },
+  footerDesc: {
     color: "#9CA3AF",
-    marginTop: "12px",
+    fontSize: "15px",
     lineHeight: "1.6",
+    maxWidth: "280px"
   },
-  footerHeading: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: "12px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-  footerLink: {
-    display: "block",
-    fontSize: "13px",
-    color: "#9CA3AF",
-    textDecoration: "none",
-    marginBottom: "8px",
-    transition: "color 0.15s",
-  },
-  footerText: {
-    fontSize: "13px",
-    color: "#9CA3AF",
-    marginBottom: "8px",
-  },
-  socialIcons: {
+  socials: {
     display: "flex",
     gap: "12px",
-    marginBottom: "8px",
+    marginTop: "10px"
   },
-  socialIcon: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "8px",
+  socialCir: {
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
     background: "#1F2937",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "12px",
-    fontWeight: "700",
-    color: "#9CA3AF",
+    color: "#D1D5DB",
+    fontSize: "14px",
+    fontWeight: "bold",
     cursor: "pointer",
-    transition: "color 0.15s",
+    transition: "background 0.2s"
   },
-  newsletterRow: {
-    display: "flex",
-    gap: "8px",
-    marginTop: "8px",
-  },
-  newsletterInput: {
-    flex: 1,
-    padding: "8px 12px",
-    borderRadius: "8px",
-    border: "1px solid #374151",
-    background: "#1F2937",
+  footerHeading: {
     color: "#fff",
-    fontSize: "13px",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  newsletterBtn: {
-    padding: "8px 14px",
-    borderRadius: "8px",
-    background: "#2563EB",
-    color: "#fff",
-    border: "none",
-    fontSize: "13px",
+    fontSize: "16px",
     fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "'DM Sans', sans-serif",
+    marginBottom: "24px"
   },
-  footerBottom: {
-    borderTop: "1px solid #1F2937",
-    paddingTop: "24px",
+  footerCol: {
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "12px",
+    flexDirection: "column",
+    gap: "16px"
   },
-  footerCopy: {
-    fontSize: "12px",
-    color: "#6B7280",
-  },
-  footerBottomLinks: {
-    display: "flex",
-    gap: "20px",
-  },
-  footerSmallLink: {
-    fontSize: "12px",
-    color: "#6B7280",
+  footerLink: {
+    color: "#9CA3AF",
     textDecoration: "none",
-    transition: "color 0.15s",
+    fontSize: "15px",
+    transition: "color 0.2s"
   },
+  footerContactText: {
+    color: "#9CA3AF",
+    fontSize: "15px"
+  },
+  
+  // MODAL STYLES
+  modalOverlay: {
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(17, 24, 39, 0.6)",
+    backdropFilter: "blur(4px)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    zIndex: 1000,
+    padding: "20px"
+  },
+  modalContent: {
+    background: "#fff",
+    borderRadius: "24px",
+    padding: "40px",
+    maxWidth: "500px",
+    width: "100%",
+    position: "relative",
+    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+    animation: "fadeUp 0.3s ease-out forwards"
+  },
+  modalClose: {
+    position: "absolute",
+    top: "20px", right: "20px",
+    background: "#F3F4F6",
+    border: "none",
+    borderRadius: "50%",
+    width: "36px", height: "36px",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer",
+    color: "#6B7280",
+    transition: "all 0.2s"
+  },
+  modalIconWrapper: {
+    width: "64px", height: "64px",
+    borderRadius: "16px",
+    background: "#EFF6FF",
+    color: "#2563EB",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    marginBottom: "24px"
+  },
+  modalTitle: {
+    fontFamily: "'Fraunces', serif",
+    fontSize: "28px",
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: "16px"
+  },
+  modalDesc: {
+    fontSize: "16px",
+    color: "#4B5563",
+    lineHeight: "1.7"
+  }
 };
