@@ -1,4 +1,7 @@
 import { useState } from "react";
+import chat1 from "../assets/chat-1.jpg";
+import chat2 from "../assets/chat-2.jpg";
+import chat3 from "../assets/chat-3.jpg";
 
 const Logo = () => (
   <div style={styles.logoRow}>
@@ -153,13 +156,26 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ABOUT SECTION */}
+      {/* YOU ASKED SECTION */}
       <section style={styles.aboutSection} id="about">
         <div style={styles.aboutContent}>
-          <h2 style={styles.sectionTitle}>About Agenda</h2>
+          <h2 style={styles.sectionTitle}>You asked, we have answered.</h2>
           <p style={styles.sectionSubtitle}>
-            Agenda is built for students who want to take control of their academic life. We simplify the chaos of assignments, deadlines, and courses into one beautifully organized dashboard so you can focus on learning, not tracking.
+            Tired of missing deadlines and constantly asking the group chat for what's due? We built Agenda to solve exactly this problem.
           </p>
+          
+          <div style={styles.chatGrid}>
+            <div style={{...styles.chatCard, transform: 'rotate(-2deg)'}}>
+              {/* Replace these src paths with the actual paths to the images you uploaded */}
+              <img src={chat1} alt="Student asking for assignments" style={styles.chatImg} />
+            </div>
+            <div style={{...styles.chatCard, transform: 'rotate(1deg)', marginTop: '20px'}}>
+              <img src={chat2} alt="Student confused about the assignment website" style={styles.chatImg} />
+            </div>
+            <div style={{...styles.chatCard, transform: 'rotate(-1deg)'}}>
+              <img src={chat3} alt="Student saying approaching deadlines" style={styles.chatImg} />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -221,32 +237,28 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer style={styles.footer} id="contact">
         <div style={styles.footerGrid}>
+          {/* LEFT: Info */}
           <div style={styles.footerColInfo}>
             <Logo />
             <p style={styles.footerDesc}>The modern way to manage student life. Stay on top of your assignments without stress.</p>
-            <div style={styles.socials}>
-              {["f", "t", "in", "yt"].map(s => (
-                <span key={s} style={styles.socialCir}>{s}</span>
-              ))}
-            </div>
           </div>
-          <div style={styles.footerCol}>
-            <h4 style={styles.footerHeading}>Company</h4>
-            {["About Agenda", "Features", "Privacy Policy", "Terms of Service"].map(l => (
-              <a key={l} href="#" style={styles.footerLink}>{l}</a>
-            ))}
-          </div>
-          <div style={styles.footerCol}>
-            <h4 style={styles.footerHeading}>Resources</h4>
-            {["Help Center", "Student Guides", "System Status"].map(l => (
-              <a key={l} href="#" style={styles.footerLink}>{l}</a>
-            ))}
-          </div>
+
+          {/* MIDDLE: Contact */}
           <div style={styles.footerCol}>
             <h4 style={styles.footerHeading}>Contact Us</h4>
             <p style={styles.footerContactText}>Location: KNUST, Kumasi Ghana</p>
             <p style={styles.footerContactText}>Email: webdev28@cs3.knust.edu.gh</p>
             <p style={styles.footerContactText}>Phone: 000 000 0000</p>
+          </div>
+
+          {/* RIGHT: Newsletter */}
+          <div style={styles.footerCol}>
+            <h4 style={styles.footerHeading}>Newsletter</h4>
+            <p style={styles.footerContactText}>Subscribe for the latest updates.</p>
+            <form style={styles.newsletterForm} onSubmit={(e) => e.preventDefault()}>
+              <input type="email" placeholder="Your email" style={styles.newsletterInput} />
+              <button type="submit" style={styles.newsletterBtn} className="btn-hover">Subscribe</button>
+            </form>
           </div>
         </div>
       </footer>
@@ -411,16 +423,38 @@ const styles = {
     boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
   },
 
-  // ABOUT SECTION
+  // YOU ASKED SECTION
   aboutSection: {
-    padding: "80px",
+    padding: "100px 80px",
     background: "#fff",
     display: "flex",
     justifyContent: "center",
     textAlign: "center"
   },
   aboutContent: {
-    maxWidth: "800px",
+    maxWidth: "1000px",
+    width: "100%",
+  },
+  chatGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "30px",
+    marginTop: "60px",
+    alignItems: "center"
+  },
+  chatCard: {
+    padding: "12px",
+    background: "#f9fafb",
+    borderRadius: "16px",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+    border: "1px solid #e5e7eb",
+    transition: "transform 0.3s ease",
+  },
+  chatImg: {
+    width: "100%",
+    borderRadius: "8px",
+    display: "block",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
   },
 
   // SERVICES
@@ -592,13 +626,13 @@ const styles = {
 
   // FOOTER
   footer: {
-    background: "#111827",
+    background: "#030712",
     padding: "80px 80px 40px",
     borderTop: "1px solid #1F2937"
   },
   footerGrid: {
     display: "grid",
-    gridTemplateColumns: "2fr 1fr 1fr 1fr",
+    gridTemplateColumns: "1fr 1fr 1fr",
     gap: "60px",
     maxWidth: "1100px",
     margin: "0 auto",
@@ -614,25 +648,6 @@ const styles = {
     lineHeight: "1.6",
     maxWidth: "280px"
   },
-  socials: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "10px"
-  },
-  socialCir: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    background: "#1F2937",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#D1D5DB",
-    fontSize: "14px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "background 0.2s"
-  },
   footerHeading: {
     color: "#fff",
     fontSize: "16px",
@@ -644,14 +659,33 @@ const styles = {
     flexDirection: "column",
     gap: "16px"
   },
-  footerLink: {
-    color: "#9CA3AF",
-    textDecoration: "none",
-    fontSize: "15px",
-    transition: "color 0.2s"
-  },
   footerContactText: {
     color: "#9CA3AF",
+    fontSize: "15px"
+  },
+  newsletterForm: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    marginTop: "8px"
+  },
+  newsletterInput: {
+    padding: "12px 16px",
+    borderRadius: "8px",
+    border: "1px solid #374151",
+    background: "#111827",
+    color: "#fff",
+    fontSize: "15px",
+    outline: "none"
+  },
+  newsletterBtn: {
+    padding: "12px 16px",
+    borderRadius: "8px",
+    background: "#2563EB",
+    color: "#fff",
+    border: "none",
+    fontWeight: "600",
+    cursor: "pointer",
     fontSize: "15px"
   },
   
