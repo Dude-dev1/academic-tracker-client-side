@@ -45,7 +45,7 @@ export default function SettingsPage() {
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
       <Sidebar />
-      <div style={styles.content}>
+      <div className="content-area-mobile-override" style={styles.content}>
         <header style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <span style={styles.pageLabel}>Settings</span>

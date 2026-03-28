@@ -330,7 +330,7 @@ export default function AssignmentsPage() {
       <Sidebar sidebarOpen={sidebarOpen} />
 
       {/* MAIN CONTENT */}
-      <div style={styles.content}>
+      <div className="content-area-mobile-override" style={styles.content}>
         {/* TOP NAV */}
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>

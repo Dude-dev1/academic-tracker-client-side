@@ -240,7 +240,7 @@ export default function ProgressPage() {
       <Sidebar sidebarOpen={isSidebarOpen} />
 
       {/* MAIN CONTENT */}
-      <div style={styles.content}>
+      <div className="content-area-mobile-override" style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <button className="mobile-hide" onClick={() => setIsSidebarOpen((v) => !v)} style={styles.toggleBtn}>

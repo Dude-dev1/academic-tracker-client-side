@@ -152,4 +152,14 @@ body {
   .mobile-hide {
     display: none !important;
   }
+
+  .content-area-mobile-override {
+    max-width: calc(100vw - 80px) !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Make space for the sticky sidebar toggle button so it doesn't overlap text */
+  nav[style*="padding"] {
+    padding-left: 28px !important;
+  }
 }

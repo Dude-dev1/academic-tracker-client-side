@@ -120,7 +120,7 @@ const handleDelete = (id) => {
 
       <Sidebar sidebarOpen={sidebarOpen} />
 
-      <div style={styles.content}>
+      <div className="content-area-mobile-override" style={styles.content}>
         <nav style={styles.topNav}>
           <div style={styles.topNavLeft}>
             <button className="mobile-hide" onClick={() => setSidebarOpen((v) => !v)} style={styles.toggleBtn}>
