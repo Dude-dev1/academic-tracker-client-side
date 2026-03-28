@@ -134,6 +134,10 @@ body {
   }
 }
 
+.mobile-show {
+  display: none !important;
+}
+
 @media (max-width: 600px) {
   /* Smaller screens */
   div[style*="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))"] {
@@ -156,6 +160,10 @@ body {
 @media (max-width: 1024px) {
   .mobile-hide {
     display: none !important;
+  }
+
+  .mobile-show {
+    display: flex !important;
   }
 
   .content-area-mobile-override {

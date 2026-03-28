@@ -47,7 +47,7 @@ function OnboardingIllustration() {
   );
 }
 
-function PersonalOnboarding({ firstName, setIsModalOpen }) {
+function PersonalOnboarding({ firstName, setIsModalOpen, setJoinModalOpen, user }) {
   const steps = [
     {
       label: "Add your first course",
@@ -69,6 +69,26 @@ function PersonalOnboarding({ firstName, setIsModalOpen }) {
   return (
     <>
       <div style={styles.welcomeBlock}>
+        {(user?.role === "student" || !user?.role || user?.role !== "instructor") && setJoinModalOpen && (
+          <button 
+            className="mobile-show"
+            onClick={() => setJoinModalOpen(true)}
+            style={{ 
+              background: "#7C3AED", 
+              color: "#fff", 
+              border: "none", 
+              padding: "10px 16px",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              marginBottom: "16px",
+              width: "fit-content"
+            }}
+          >
+            + Join Class
+          </button>
+        )}
         <h1 style={styles.welcomeTitle}>Welcome, {firstName}</h1>
         <p style={styles.welcomeSub}>
           Let's set up your study space to start tracking assignments.
@@ -116,7 +136,7 @@ function PersonalOnboarding({ firstName, setIsModalOpen }) {
   );
 }
 
-function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], courses = [] }) {
+function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], courses = [], setJoinModalOpen, user }) {
   const dueToday = assignments.filter(a => {
     if (!a.dueDate) return false;
     const today = new Date();
@@ -145,6 +165,26 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
   return (
     <>
       <div style={styles.welcomeBlock}>
+        {(user?.role === "student" || !user?.role || user?.role !== "instructor") && setJoinModalOpen && (
+          <button 
+            className="mobile-show"
+            onClick={() => setJoinModalOpen(true)}
+            style={{ 
+              background: "#7C3AED", 
+              color: "#fff", 
+              border: "none", 
+              padding: "10px 16px",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              marginBottom: "16px",
+              width: "fit-content"
+            }}
+          >
+            + Join Class
+          </button>
+        )}
         <h1 style={styles.welcomeTitle}>
           Welcome back, <span style={styles.welcomeName}>{firstName}</span>
         </h1>
@@ -714,6 +754,7 @@ export default function DashboardPage() {
             {(user?.role === "student" || !user?.role || user?.role !== "instructor") && (
               <button 
                 onClick={() => setJoinModalOpen(true)}
+                className="mobile-hide"
                 style={{ 
                   ...styles.tabBtn, 
                   background: "#7C3AED", 
@@ -751,11 +792,15 @@ export default function DashboardPage() {
               <PersonalOnboarding
                 firstName={firstName}
                 setIsModalOpen={setIsModalOpen}
+                setJoinModalOpen={setJoinModalOpen}
+                user={user}
               />
             ) : (
               <PersonalView
                 firstName={firstName}
                 setIsModalOpen={setIsModalOpen}
+                setJoinModalOpen={setJoinModalOpen}
+                user={user}
                 navigate={navigate}
               />
             )
