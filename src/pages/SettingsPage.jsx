@@ -1,17 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/ui/Sidebar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { updateProfile } from "../services/authService";
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, setUser, logout } = useAuth();
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || user?.username || "",
+    name: user?.name || user?.username || user?.displayName || "",
     email: user?.email || "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user?.name || user?.username || user?.displayName || "",
+        email: user?.email || "",
+      });
+    }
+  }, [user]);
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -22,7 +32,7 @@ export default function SettingsPage() {
   const handleEditToggle = () => {
     if (isEditing) {
       setFormData({
-        name: user?.name || user?.username || "",
+        name: user?.name || user?.username || user?.displayName || "",
         email: user?.email || "",
       });
     }
@@ -31,7 +41,11 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
-      setIsEditing(false);
+      const res = await updateProfile(formData);
+      if (res.success) {
+        setUser(res.user);
+        setIsEditing(false);
+      }
     } catch (err) {
       console.error("Failed to update profile", err);
     }

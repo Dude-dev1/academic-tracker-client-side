@@ -176,7 +176,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
-            <button style={styles.editProfileBtn}>
+            <button style={styles.editProfileBtn} onClick={() => navigate("/settings")}>
               <svg
                 width="12"
                 height="12"

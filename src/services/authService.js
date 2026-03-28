@@ -24,6 +24,12 @@ export const getMe = async () => {
   return response.data;
 };
 
+// Update user profile
+export const updateProfile = async (userData) => {
+  const response = await api.put("/auth/profile", userData);
+  return response.data;
+};
+
 // Logout
 export const logout = () => {
   localStorage.removeItem("token");
