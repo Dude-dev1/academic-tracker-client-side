@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -57,6 +57,8 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -64,7 +66,7 @@ export default function LoginPage() {
     setErrorMsg("");
     try {
       await login({ email, password });
-      navigate("/dashboard");
+      navigate(from, { replace: true });
     } catch (err) {
       setErrorMsg(
         err.response?.data?.message ||

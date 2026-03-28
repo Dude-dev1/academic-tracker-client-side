@@ -14,8 +14,13 @@ export default function JoinClassPage() {
         await api.post("/classes/join", { code });
         navigate("/dashboard");
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to join class");
-        setLoading(false);
+        const msg = err.response?.data?.message || "";
+        if (msg.includes("already a member")) {
+          navigate("/dashboard");
+        } else {
+          setError(msg || "Failed to join class");
+          setLoading(false);
+        }
       }
     };
     if (code) {

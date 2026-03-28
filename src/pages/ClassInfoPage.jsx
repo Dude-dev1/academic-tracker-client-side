@@ -1,11 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/ui/Sidebar";
+import Modal from "../components/ui/Modal";
+import { getClasses, createClass, addMember } from "../services/classService";
+
 export default function ClassInfoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [copied, setCopied] = useState({ link: false, code: false });
   const { user } = useAuth();
+  
+  const [showCreateClass, setShowCreateClass] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newClassName, setNewClassName] = useState("");
+  const [newClassDesc, setNewClassDesc] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [currentClass, setCurrentClass] = useState(null);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const res = await getClasses();
+        if (res.data && res.data.length > 0) {
+          setCurrentClass(res.data[0]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchClasses();
+  }, []);
+
+  const handleCreateClass = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await createClass({ name: newClassName, description: newClassDesc });
+      alert("Class created successfully");
+      setShowCreateClass(false);
+      setNewClassName("");
+      setNewClassDesc("");
+      if (res.data) setCurrentClass(res.data);
+    } catch (err) {
+      alert("Failed to create class");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    if (!currentClass) {
+      alert("No class selected or available to add member into.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await addMember(currentClass._id || currentClass.id, inviteEmail);
+      alert("Invitation sent successfully");
+      setShowAddMember(false);
+      setInviteEmail("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to add member");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const firstName =
     user?.displayName?.split(" ")[0] ||
@@ -14,7 +75,7 @@ export default function ClassInfoPage() {
     "there";
   const initials = firstName.slice(0, 2).toUpperCase();
 
-  const classCode = "class689a"; // Wait, maybe we should fetch it, but for now fallback to the mockup if no logic existed.
+  const classCode = currentClass?.code || "class689a";
   const inviteLink = `${window.location.origin}/join/${classCode}`;
 
   const handleCopy = (type, value) => {
@@ -89,22 +150,90 @@ export default function ClassInfoPage() {
         <main className="class-main" style={styles.main}>
           {/* Page Header */}
           <div style={styles.pageHeader}>
-            <div style={styles.classBadge}>
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-              </svg>
-              Class
+            <div>
+              <div style={styles.classBadge}>
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+                Class
+              </div>
+              <p style={styles.pageTitle}>Class Information</p>
             </div>
-            <p style={styles.pageTitle}>Class Information</p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                style={{...styles.copyBtn, background: "#7C3AED", color: "#fff"}} 
+                onClick={() => setShowCreateClass(true)}
+              >
+                Create Class
+              </button>
+              <button 
+                style={styles.copyBtn} 
+                onClick={() => setShowAddMember(true)}
+              >
+                Add Member
+              </button>
+            </div>
           </div>
+
+          <Modal isOpen={showCreateClass} onClose={() => setShowCreateClass(false)} title="Create Class">
+            <form onSubmit={handleCreateClass} className="flex flex-col gap-4">
+              <label style={{display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', fontWeight: '500'}}>
+                Class Name
+                <input
+                  style={{padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB'}}
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                  required
+                />
+              </label>
+              <label style={{display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', fontWeight: '500'}}>
+                Description
+                <input
+                  style={{padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB'}}
+                  value={newClassDesc}
+                  onChange={(e) => setNewClassDesc(e.target.value)}
+                  required
+                />
+              </label>
+              <button 
+                type="submit" 
+                disabled={loading} 
+                style={{...styles.copyBtn, background: loading ? "#9CA3AF" : "#7C3AED", color: "#fff", width: '100%', marginTop: '16px', justifyContent: 'center'}}
+              >
+                {loading ? "Creating..." : "Create Class"}
+              </button>
+            </form>
+          </Modal>
+
+          <Modal isOpen={showAddMember} onClose={() => setShowAddMember(false)} title="Add Member">
+            <form onSubmit={handleAddMember} className="flex flex-col gap-4">
+              <label style={{display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', fontWeight: '500'}}>
+                Student Email
+                <input
+                  type="email"
+                  style={{padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB'}}
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                />
+              </label>
+              <button 
+                type="submit" 
+                disabled={loading} 
+                style={{...styles.copyBtn, background: loading ? "#9CA3AF" : "#7C3AED", color: "#fff", width: '100%', marginTop: '16px', justifyContent: 'center'}}
+              >
+                {loading ? "Sending..." : "Send Invite"}
+              </button>
+            </form>
+          </Modal>
 
           {/* Course Card */}
           <div className="class-card" style={styles.card}>
@@ -125,9 +254,9 @@ export default function ClassInfoPage() {
               <div style={styles.courseInfo}>
                 <div className="course-info-header" style={styles.courseInfoHeader}>
                   <div>
-                    <p style={styles.courseName}>Financial Accounting I</p>
+                    <p style={styles.courseName}>{currentClass?.name || "Financial Accounting I"}</p>
                     <p style={styles.courseCode}>
-                      Course Code : <strong>Acc 252</strong>
+                      Course Code : <strong>{currentClass?.code || "Acc 252"}</strong>
                     </p>
                   </div>
                   <button style={styles.editBtn}>
@@ -148,8 +277,7 @@ export default function ClassInfoPage() {
                 <div className="desc-flex" style={styles.courseDescRow}>
                   <span style={styles.courseDescLabel}>Description:</span>
                   <span style={styles.courseDescText}>
-                    This is an introductory course designed to create awareness
-                    of the accounting concepts and principles.
+                    {currentClass?.description || "This is an introductory course designed to create awareness of the accounting concepts and principles."}
                   </span>
                 </div>
               </div>
@@ -370,7 +498,7 @@ const styles = {
     width: "100%",
     animation: "fadeUp 0.4s ease both",
   },
-  pageHeader: { marginBottom: "24px" },
+  pageHeader: { marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" },
   classBadge: {
     display: "inline-flex",
     alignItems: "center",
