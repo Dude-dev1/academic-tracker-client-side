@@ -115,7 +115,7 @@ export default function LandingPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: #FAFBFC; }
+        body { font-family: 'DM Sans', sans-serif; background: #FAFBFC; overflow-x: hidden; }
         
         /* Utility Classes for Hover Effects */
         .feature-card { transition: all 0.3s ease; }
@@ -138,12 +138,90 @@ export default function LandingPage() {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+          .hero-section {
+            flex-direction: column !important;
+            padding: 120px 40px 60px !important;
+            gap: 40px !important;
+          }
+          .hero-left {
+            max-width: 100% !important;
+            text-align: center;
+          }
+          .hero-buttons {
+            justify-content: center;
+          }
+          .diagonal-bg::before {
+            width: 100%;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%);
+          }
+          .nav-section {
+            padding: 20px 40px !important;
+          }
+          .nav-links {
+            display: none !important;
+          }
+          .about-section, .services-section {
+            padding: 60px 40px !important;
+          }
+          .dark-section {
+            padding: 100px 40px !important;
+            margin-top: 0 !important;
+          }
+          .footer-section {
+            padding: 60px 40px !important;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .nav-section {
+            padding: 15px 20px !important;
+          }
+          .hero-section {
+            padding: 100px 20px 40px !important;
+          }
+          .hero-title {
+            font-size: 40px !important;
+          }
+          .image-grid {
+            display: none !important;
+          }
+          .about-section, .services-section {
+            padding: 50px 20px !important;
+          }
+          .dark-section {
+            padding: 60px 20px !important;
+          }
+          .pricing-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .footer-grid {
+            flex-direction: column !important;
+            gap: 40px !important;
+          }
+          .footer-section {
+            padding: 40px 20px !important;
+          }
+          .chat-grid {
+            flex-direction: column !important;
+          }
+          .chat-card {
+            max-width: 100% !important;
+            transform: none !important;
+            margin: 0 0 15px 0 !important;
+          }
+          .newsletter-form {
+            flex-direction: column !important;
+          }
+        }
       `}</style>
       
       {/* NAVBAR */}
-      <nav style={styles.nav}>
+      <nav style={styles.nav} className="nav-section">
         <Logo />
-        <div style={styles.navLinks}>
+        <div style={styles.navLinks} className="nav-links">
           <a href="#" className="nav-link" style={styles.navLink}>Home</a>
           <a href="#about" className="nav-link" style={styles.navLink}>About</a>
           <a href="/login" className="nav-link" style={styles.navLink}>Login</a>
@@ -154,16 +232,16 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO SECTION */}
-      <section style={styles.hero} className="diagonal-bg">
-        <div style={styles.heroLeft}>
-          <h1 style={styles.heroTitle}>
+      <section style={styles.hero} className="diagonal-bg hero-section">
+        <div style={styles.heroLeft} className="hero-left">
+          <h1 style={styles.heroTitle} className="hero-title">
             Industry Leading<br/>
             <span style={{color: '#EAB308'}}>Student Planner.</span>
           </h1>
           <p style={styles.heroSubtitle}>
             Track deadlines, monitor progress, and keep up with class updates in one simple place. Stay organized effortlessly.
           </p>
-          <div style={styles.heroButtons}>
+          <div style={styles.heroButtons} className="hero-buttons">
             <a href="/signup" style={styles.primaryBtn} className="btn-hover">Get Started</a>
             <div style={styles.trustBadge}>
                <div style={styles.stars}>★★★★★</div>
@@ -172,7 +250,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div style={styles.heroRight}>
-          <div style={styles.imageGrid}>
+          <div style={styles.imageGrid} className="image-grid">
             <div style={{...styles.imgBox, gridColumn: "1 / span 2", gridRow: "1 / span 2", height: "240px", backgroundImage: "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800')", backgroundSize: "cover", backgroundPosition: "center"}}></div>
             <div style={{...styles.imgBox, height: "115px", backgroundImage: "url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400')", backgroundSize: "cover"}}></div>
             <div style={{...styles.imgBox, height: "115px", background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "32px", fontWeight: "bold"}}>
@@ -183,27 +261,27 @@ export default function LandingPage() {
       </section>
 
       {/* YOU ASKED SECTION */}
-      <section style={styles.aboutSection} id="about">
+      <section style={styles.aboutSection} id="about" className="about-section">
         <div style={styles.aboutContent}>
           <h2 style={styles.sectionTitle}>You asked, we have answered.</h2>
           <p style={styles.sectionSubtitle}>
             Tired of missing deadlines and constantly asking the group chat for what's due? We built Agenda to solve exactly this problem.
           </p>
           
-          <div style={styles.chatGrid}>
-            <div style={{...styles.chatCard, transform: 'rotate(-2deg)'}}>
+          <div style={styles.chatGrid} className="chat-grid">
+            <div style={{...styles.chatCard, transform: 'rotate(-2deg)'}} className="chat-card">
               <img src={chat1} alt="Student asking for assignments" style={styles.chatImg} />
             </div>
-            <div style={{...styles.chatCard, transform: 'rotate(1deg)', marginTop: '20px'}}>
+            <div style={{...styles.chatCard, transform: 'rotate(1deg)', marginTop: '20px'}} className="chat-card">
               <img src={chat2} alt="Student confused about the assignment website" style={styles.chatImg} />
             </div>
-            <div style={{...styles.chatCard, transform: 'rotate(-1deg)'}}>
+            <div style={{...styles.chatCard, transform: 'rotate(-1deg)'}} className="chat-card">
               <img src={chat3} alt="Student saying approaching deadlines" style={styles.chatImg} />
             </div>
-            <div style={{...styles.chatCard, transform: 'rotate(2deg)', marginTop: '15px'}}>
+            <div style={{...styles.chatCard, transform: 'rotate(2deg)', marginTop: '15px'}} className="chat-card">
               <img src={chat4} alt="Student asking about next task" style={styles.chatImg} />
             </div>
-            <div style={{...styles.chatCard, transform: 'rotate(-3deg)', marginTop: '10px'}}>
+            <div style={{...styles.chatCard, transform: 'rotate(-3deg)', marginTop: '10px'}} className="chat-card">
               <img src={chat5} alt="Student missed a deadline" style={styles.chatImg} />
             </div>
           </div>
@@ -211,7 +289,7 @@ export default function LandingPage() {
       </section>
 
       {/* HOW IT WORKS / FEATURES */}
-      <section style={styles.servicesSection}>
+      <section style={styles.servicesSection} className="services-section">
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>How it works</h2>
           <p style={styles.sectionSubtitle}>Add assignments, follow deadlines, and keep track of what matters — without clutter.</p>
@@ -238,13 +316,13 @@ export default function LandingPage() {
       </section>
 
       {/* REVIEWS SECTION */}
-      <section style={styles.darkSection}>
+      <section style={styles.darkSection} className="dark-section">
         <div style={styles.darkSectionInner}>
           <div style={styles.darkHeader}>
              <h2 style={{...styles.sectionTitle, color: "#fff"}}>What Students Say</h2>
              <p style={{...styles.sectionSubtitle, color: "#9CA3AF"}}>Join thousands of students who have organized their lives with us.</p>
           </div>
-          <div style={styles.pricingGrid}>
+          <div style={styles.pricingGrid} className="pricing-grid">
              {[
                { name: "Sarah L.", role: "Computer Science St.", text: "Agenda completely changed how I handle my coursework. No more missed deadines!" },
                { name: "James T.", role: "Business Major", text: "The clean interface and progress tracking keep me motivated throughout the semester." },
@@ -266,8 +344,8 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer style={styles.footer} id="contact">
-        <div style={styles.footerGrid}>
+      <footer style={styles.footer} id="contact" className="footer-section">
+        <div style={styles.footerGrid} className="footer-grid">
           {/* LEFT: Info */}
           <div style={styles.footerColInfo}>
             <Logo />
@@ -286,7 +364,7 @@ export default function LandingPage() {
           <div style={styles.footerCol}>
             <h4 style={styles.footerHeading}>Newsletter</h4>
             <p style={styles.footerContactText}>Subscribe for the latest updates.</p>
-            <form style={styles.newsletterForm} onSubmit={(e) => e.preventDefault()}>
+            <form style={styles.newsletterForm} className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
               <input type="email" placeholder="Your email" style={styles.newsletterInput} />
               <button type="submit" style={styles.newsletterBtn} className="btn-hover">Subscribe</button>
             </form>
