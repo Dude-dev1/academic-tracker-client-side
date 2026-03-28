@@ -691,7 +691,7 @@ const styles = {
   badgeLabel: { whiteSpace: "nowrap" },
   grid2: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
     gap: "16px",
     marginBottom: "16px",
   },
@@ -727,7 +727,7 @@ const styles = {
   },
   statGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
     gap: "10px",
   },
   statItem: {
@@ -740,7 +740,7 @@ const styles = {
   statLabel: { fontSize: "11px", color: "#6B7280", lineHeight: "1.4" },
   coursesGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
     gap: "0 24px",
   },
   courseItem: {

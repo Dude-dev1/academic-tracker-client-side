@@ -126,7 +126,7 @@ const Sidebar = ({ sidebarOpen = true }) => {
         position: "sticky",
         top: 0,
         height: "100vh",
-        width: expanded ? "220px" : "64px"
+        width: expanded ? "210px" : "64px"
       },
       sidebarLogo: {
         display: "flex",
@@ -273,10 +273,10 @@ const Sidebar = ({ sidebarOpen = true }) => {
       display: "flex",
       flexDirection: "column",
       transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-      width: expanded ? "280px" : "80px",
+      width: expanded ? "240px" : "60px",
       zIndex: 9999,
       overflow: "visible", // So toggle btn overflows
-      padding: expanded ? "24px 20px" : "24px 16px",
+      padding: expanded ? "24px 20px" : "24px 12px",
       fontFamily: "'DM Sans', sans-serif",
     },
     toggleBtn: {
@@ -432,13 +432,13 @@ const Sidebar = ({ sidebarOpen = true }) => {
         @media (max-width: 1024px) {
           /* Allow main content to wrap text properly instead of shrinking to 0 */
           .content-area-mobile-override {
-             max-width: calc(100vw - 80px) !important;
+             max-width: calc(100vw - 60px) !important;
              overflow-x: hidden;
           }
         }
       `}</style>
       
-      {isMobile && <div style={{flexShrink: 0, width: "80px", transition: "width 0.35s"}} />}
+      {isMobile && <div style={{flexShrink: 0, width: "60px", transition: "width 0.35s"}} />}
 
       {expanded && (
         <div 

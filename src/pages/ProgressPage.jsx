@@ -612,7 +612,7 @@ const styles = {
   },
   statsRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
     gap: "12px",
     marginBottom: "16px",
   },
@@ -634,7 +634,7 @@ const styles = {
   statSub: { fontSize: "11px", color: "#9CA3AF", marginTop: "4px" },
   chartsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
     gap: "14px",
     marginBottom: "16px",
   },

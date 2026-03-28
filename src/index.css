@@ -96,7 +96,12 @@ body {
   div[style*="grid-template-columns: minmax(0px, 1fr) minmax(0px, 1fr)"],
   div[style*="grid-template-columns: repeat(3,"],
   div[style*="grid-template-columns: repeat(4,"],
-  div[style*="grid-template-columns: 1fr auto"] {
+  div[style*="grid-template-columns: 1fr auto"],
+  div[style*="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))"],
+  div[style*="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))"],
+  div[style*="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))"],
+  div[style*="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))"],
+  div[style*="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))"] {
     grid-template-columns: 1fr !important;
   }
   
@@ -154,7 +159,7 @@ body {
   }
 
   .content-area-mobile-override {
-    max-width: calc(100vw - 80px) !important;
+    max-width: calc(100vw - 60px) !important;
     overflow-x: hidden !important;
   }
 

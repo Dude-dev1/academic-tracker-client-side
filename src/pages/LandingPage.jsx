@@ -590,7 +590,7 @@ const styles = {
   },
   servicesGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
     gap: "30px",
     maxWidth: "1100px",
     margin: "0 auto",
@@ -684,7 +684,7 @@ const styles = {
   },
   pricingGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
     gap: "30px",
   },
   pricingCard: {
