@@ -33,11 +33,15 @@ function ActionDropdown({ onClose, onDelete, onEdit, row, onComplete }) {
       if (ref.current && !ref.current.contains(e.target)) onClose();
     }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("touchstart", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("touchstart", handleClick);
+    };
   }, [onClose]);
 
   return (
-    <div ref={ref} style={styles.dropdown} onClick={(e) => e.stopPropagation()}>
+    <div ref={ref} style={styles.dropdown} onClick={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
       {[
         {
           label: "Edit",
@@ -102,7 +106,14 @@ function AssignmentRow({ row, onDelete, onEdit, onView }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <tr style={{ ...styles.row, cursor: "pointer" }} onClick={() => onView && onView(row)}>
+    <tr 
+      style={{ ...styles.row, cursor: "pointer" }} 
+      onClick={(e) => {
+        // Prevent row click if clicking a button, link, or dropdown
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.action-dropdown-ignore')) return;
+        if (onView) onView(row);
+      }}
+    >
       <td style={styles.titleCell}>{row.title}</td>
       <td style={styles.dateCell}>
         {row.attachmentUrl ? (
@@ -130,8 +141,12 @@ function AssignmentRow({ row, onDelete, onEdit, onView }) {
           {statusLabel(row.status)}
         </span>
       </td>
-      <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
-        <button onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }} style={styles.actionBtn}>
+      <td className="action-dropdown-ignore" style={{ position: "relative", padding: "8px" }} onClick={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
+        <button 
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen((v) => !v); }} 
+          onTouchStart={(e) => e.stopPropagation()}
+          style={styles.actionBtn}
+        >
           •••
         </button>
         {open && (
@@ -323,6 +338,7 @@ export default function AssignmentsPage() {
           }
           .table-wrapper {
             overflow-x: auto !important;
+            padding-bottom: 120px !important; /* Prevents action dropdown from clipping */
           }
         }
       `}</style>
@@ -938,13 +954,19 @@ const styles = {
   actionBtn: {
     background: "none",
     border: "none",
-    fontSize: "16px",
+    fontSize: "18px",
     color: "#9CA3AF",
     cursor: "pointer",
+    padding: "8px 12px", // Increased padding for touch targets
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "40px",
+    minHeight: "40px"
   },
   dropdown: {
     position: "absolute",
-    right: 0,
+    right: "10px", // added offset so it doesn't touch the very edge
     top: "100%",
     background: "#fff",
     border: "1px solid #E5E7EB",
