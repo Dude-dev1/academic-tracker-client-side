@@ -313,7 +313,7 @@ function PersonalView({ firstName, setIsModalOpen, navigate, assignments = [], c
           <div style={styles.card}>
             <div style={styles.cardHeaderRow}>
               <h2 style={styles.cardTitle}>Upcoming Assignments</h2>
-              <a href="#" style={styles.viewAll}>
+              <a href="/assignments" style={styles.viewAll}>
                 View All
               </a>
             </div>
