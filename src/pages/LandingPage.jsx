@@ -4,6 +4,8 @@ import chat2 from "../assets/chat-2.jpg";
 import chat3 from "../assets/chat-3.jpg";
 import chat4 from "../assets/chat-4.jpg";
 import chat5 from "../assets/chat-5.jpg";
+import { useToast } from "../context/ToastContext";
+import api from "../services/api";
 
 const Logo = () => (
   <div style={styles.logoRow}>
@@ -18,6 +20,24 @@ const Logo = () => (
 export default function LandingPage() {
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [studentCount, setStudentCount] = useState(0);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const toast = useToast();
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    try {
+      setIsSubscribing(true);
+      await api.post("/auth/newsletter", { email: newsletterEmail });
+      toast.addToast("Success!", "Subscribed successfully! Please check your email.", "success");
+      setNewsletterEmail("");
+    } catch (err) {
+      toast.addToast("Error", "Subscription failed. Please try again.", "error");
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   useEffect(() => {
     let start = 0;
@@ -364,9 +384,11 @@ export default function LandingPage() {
           <div style={styles.footerCol}>
             <h4 style={styles.footerHeading}>Newsletter</h4>
             <p style={styles.footerContactText}>Subscribe for the latest updates.</p>
-            <form style={styles.newsletterForm} className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-              <input type="email" placeholder="Your email" style={styles.newsletterInput} />
-              <button type="submit" style={styles.newsletterBtn} className="btn-hover">Subscribe</button>
+            <form style={styles.newsletterForm} className="newsletter-form" onSubmit={handleSubscribe}>
+              <input type="email" placeholder="Your email" style={styles.newsletterInput} value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)} required disabled={isSubscribing} />
+              <button type="submit" style={styles.newsletterBtn} className="btn-hover" disabled={isSubscribing}>
+                {isSubscribing ? "Subscribing..." : "Subscribe"}
+              </button>
             </form>
           </div>
         </div>

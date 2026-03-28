@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ToastContext = createContext();
 
@@ -7,9 +8,9 @@ export const useToast = () => useContext(ToastContext);
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((title, description, type = 'info') => {
+  const addToast = useCallback((title, description, type = 'info', action = null) => {
     const id = Date.now() + Math.random().toString(36).substr(2, 9);
-    setToasts(prev => [...prev, { id, title, description, type }]);
+    setToasts(prev => [...prev, { id, title, description, type, action }]);
     
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
@@ -41,6 +42,7 @@ export const ToastProvider = ({ children }) => {
 };
 
 const ToastItem = ({ toast, onClose }) => {
+  const navigate = useNavigate();
   const colors = {
     info: '#3b82f6',
     success: '#10b981',
@@ -81,6 +83,27 @@ const ToastItem = ({ toast, onClose }) => {
           <p style={{ margin: '6px 0 0 0', fontSize: '13.5px', color: '#4b5563', lineHeight: '1.4' }}>
             {toast.description}
           </p>
+        )}
+        {toast.action && (
+          <button 
+            onClick={() => {
+              navigate(toast.action.link);
+              onClose();
+            }}
+            style={{ 
+              marginTop: '10px', 
+              padding: '6px 12px', 
+              fontSize: '13px', 
+              fontWeight: '500', 
+              color: 'white', 
+              backgroundColor: color, 
+              border: 'none', 
+              borderRadius: '4px', 
+              cursor: 'pointer' 
+            }}
+          >
+            {toast.action.label}
+          </button>
         )}
       </div>
       <div style={{

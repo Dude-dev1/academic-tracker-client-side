@@ -38,13 +38,18 @@ export default function useWebNotifications() {
 
         let hasNew = false;
         
-        const processItem = (id, title, body, type) => {
+        const processItem = (id, title, body, type, action) => {
           if (!seenIdsRef.current.has(id)) {
             if (initializedRef.current) {
               if (Notification.permission === "granted") {
-                new Notification(title, { body, icon: '/favicon.ico' });
+                const notification = new Notification(title, { body, icon: '/favicon.ico' });
+                if (action && action.link) {
+                  notification.onclick = () => {
+                    window.location.href = action.link;
+                  };
+                }
               }
-              addToast(title, body, type);
+              addToast(title, body, type, action);
             }
             seenIdsRef.current.add(id);
             hasNew = true;
@@ -52,13 +57,13 @@ export default function useWebNotifications() {
         };
 
         if (Array.isArray(assignments)) {
-          assignments.forEach(a => processItem(a._id, "New Assignment", a.title, "assignment"));
+          assignments.forEach(a => processItem(a._id, "New Assignment", a.title, "assignment", { label: "View Assignment", link: "/assignments" }));
         }
         if (Array.isArray(announcements)) {
-          announcements.forEach(a => processItem(a._id, "New Announcement", a.title, "announcement"));
+          announcements.forEach(a => processItem(a._id, "New Announcement", a.title, "announcement", { label: "View Announcement", link: "/announcements" }));
         }
         if (Array.isArray(events)) {
-          events.forEach(e => processItem(e._id, "New Calendar Event", e.title, "event"));
+          events.forEach(e => processItem(e._id, "New Calendar Event", e.title, "event", { label: "View Event", link: "/calendar" }));
         }
 
         if (hasNew) {
