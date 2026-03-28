@@ -11,6 +11,7 @@ import CoursesPage from "./pages/CoursesPage";
 import AssignmentsPage from "./pages/AssignmentsPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
 import ClassInfoPage from "./pages/ClassInfoPage";
+import JoinClassPage from "./pages/JoinClassPage";
 import ProgressPage from "./pages/ProgressPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import CalendarPage from "./pages/CalendarPage";
@@ -141,6 +142,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <SettingsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/join/:code"
+                element={
+                  <ProtectedRoute>
+                    <JoinClassPage />
                   </ProtectedRoute>
                 }
               />

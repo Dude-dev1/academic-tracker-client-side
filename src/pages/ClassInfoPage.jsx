@@ -14,8 +14,8 @@ export default function ClassInfoPage() {
     "there";
   const initials = firstName.slice(0, 2).toUpperCase();
 
-  const inviteLink = "https://app.agenda/join/class689a";
-  const classCode = "class689a";
+  const classCode = "class689a"; // Wait, maybe we should fetch it, but for now fallback to the mockup if no logic existed.
+  const inviteLink = `${window.location.origin}/join/${classCode}`;
 
   const handleCopy = (type, value) => {
     navigator.clipboard.writeText(value);
