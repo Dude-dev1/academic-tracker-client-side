@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/ui/Modal";
 import Sidebar from "../components/ui/Sidebar";
 import assignmentService from "../services/assignmentService";
+import { joinClassByCode } from "../services/classService";
 import { getCourses } from "../services/courseService";
 import announcementService from "../services/announcementService";
 import { useEffect } from "react";
@@ -639,9 +640,35 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("Personal");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleJoinSubmit = async (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+    setJoinLoading(true);
+    try {
+      let codeToUse = joinCode.trim();
+      const parts = codeToUse.split('/join/');
+      if (parts.length > 1) {
+        codeToUse = parts[1].split('/')[0];
+      }
+      await joinClassByCode(codeToUse);
+      alert("Successfully joined the class!");
+      setJoinModalOpen(false);
+      setJoinCode("");
+      window.location.reload();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to join class");
+    } finally {
+      setJoinLoading(false);
+    }
+  };
 
   const isFirstTimeUser = false;
 
@@ -684,6 +711,21 @@ export default function DashboardPage() {
             <p style={styles.pageLabel}>Dashboard</p>
           </div>
           <div style={styles.topNavRight}>
+            {(user?.role === "student" || !user?.role || user?.role !== "instructor") && (
+              <button 
+                onClick={() => setJoinModalOpen(true)}
+                style={{ 
+                  ...styles.tabBtn, 
+                  background: "#7C3AED", 
+                  color: "#fff", 
+                  border: "none", 
+                  padding: "6px 14px",
+                  marginRight: "8px" 
+                }}
+              >
+                + Join Class
+              </button>
+            )}
             <div style={styles.tabGroup}>
               {["Personal", "Class"].map((tab) => (
                 <button
@@ -813,6 +855,48 @@ export default function DashboardPage() {
             Save Assignment
           </button>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={joinModalOpen}
+        onClose={() => setJoinModalOpen(false)}
+        title="Join a Class"
+      >
+        <form onSubmit={handleJoinSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#374151" }}>
+              Class Code or Invite Link
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 7B3X9Q or https://.../join/..."
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              style={{
+                width: "100%", padding: "10px", borderRadius: "8px",
+                border: "1px solid #D1D5DB", outline: "none", fontSize: "14px",
+                fontFamily: "'DM Sans', sans-serif"
+              }}
+              required
+            />
+            <p style={{ fontSize: "12px", color: "#6B7280", marginTop: "6px", fontFamily: "'DM Sans', sans-serif" }}>
+              Ask your instructor for the class code, then enter it here.
+            </p>
+          </div>
+          <button 
+            type="submit" 
+            disabled={joinLoading}
+            style={{
+              padding: "10px", borderRadius: "8px", border: "none",
+              background: joinLoading ? "#9CA3AF" : "#7C3AED", color: "#fff",
+              fontWeight: "500", cursor: joinLoading ? "not-allowed" : "pointer",
+              fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginTop: "8px",
+              display: "flex", justifyContent: "center"
+            }}
+          >
+            {joinLoading ? "Joining..." : "Join Class"}
+          </button>
+        </form>
       </Modal>
     </div>
   );

@@ -18,12 +18,17 @@ export default function ClassInfoPage() {
   const [loading, setLoading] = useState(false);
   const [currentClass, setCurrentClass] = useState(null);
 
+  const [classes, setClasses] = useState([]);
+
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         const res = await getClasses();
-        if (res.data && res.data.length > 0) {
-          setCurrentClass(res.data[0]);
+        if (res.data) {
+          setClasses(res.data);
+          if (res.data.length > 0) {
+            setCurrentClass(res.data[0]);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -136,13 +141,7 @@ export default function ClassInfoPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isInstructor =
-    user &&
-    currentClass &&
-    (currentClass.instructorId === user._id ||
-      currentClass.instructorId === user.id ||
-      currentClass.instructorId?._id === user._id ||
-      currentClass.instructorId?._id === user.id);
+  const isInstructor = user?.role === "instructor";
 
   return (
     <div style={styles.root}>
@@ -292,57 +291,84 @@ export default function ClassInfoPage() {
             </form>
           </Modal>
 
-          {/* Course Card */}
-          <div className="class-card" style={styles.card}>
-            <div className="course-flex" style={styles.courseCard}>
-              <div style={styles.courseIcon}>
-                <svg
-                  width="26"
-                  height="26"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#7C3AED"
-                  strokeWidth="1.5"
+          {/* Classes List */}
+          {classes.length === 0 ? (
+            <div className="class-card" style={{ ...styles.card, textAlign: 'center', padding: '40px 20px' }}>
+              <p style={{ fontSize: '15px', color: '#6B7280', fontWeight: '500' }}>No classes have been created yet.</p>
+              {isInstructor && (
+                <button
+                  style={{ ...styles.copyBtn, background: "#7C3AED", color: "#fff", margin: '16px auto 0' }}
+                  onClick={() => setShowCreateClass(true)}
                 >
-                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
-                </svg>
-              </div>
-              <div style={styles.courseInfo}>
-                <div className="course-info-header" style={styles.courseInfoHeader}>
-                  <div>
-                    <p style={styles.courseName}>{currentClass?.name || "Financial Accounting I"}</p>
-                    <p style={styles.courseCode}>
-                      Course Code : <strong>{currentClass?.code || "Acc 252"}</strong>
-                    </p>
-                  </div>
-                  <button style={styles.editBtn}>
+                  Create Your First Class
+                </button>
+              )}
+            </div>
+          ) : (
+            classes.map((cls) => (
+              <div 
+                key={cls._id || cls.id} 
+                className="class-card" 
+                style={{
+                  ...styles.card, 
+                  border: currentClass && (currentClass._id === cls._id || currentClass.id === cls.id) ? '2px solid #7C3AED' : '0.5px solid #E5E7EB',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setCurrentClass(cls)}
+              >
+                <div className="course-flex" style={styles.courseCard}>
+                  <div style={styles.courseIcon}>
                     <svg
-                      width="12"
-                      height="12"
+                      width="26"
+                      height="26"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
+                      stroke="#7C3AED"
+                      strokeWidth="1.5"
                     >
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
                     </svg>
-                    Edit
-                  </button>
-                </div>
-                <div className="desc-flex" style={styles.courseDescRow}>
-                  <span style={styles.courseDescLabel}>Description:</span>
-                  <span style={styles.courseDescText}>
-                    {currentClass?.description || "This is an introductory course designed to create awareness of the accounting concepts and principles."}
-                  </span>
+                  </div>
+                  <div style={styles.courseInfo}>
+                    <div className="course-info-header" style={styles.courseInfoHeader}>
+                      <div>
+                        <p style={styles.courseName}>{cls.name}</p>
+                        <p style={styles.courseCode}>
+                          Course Code : <strong>{cls.code}</strong>
+                        </p>
+                      </div>
+                      {isInstructor && (
+                        <button style={styles.editBtn}>
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                    <div className="desc-flex" style={styles.courseDescRow}>
+                      <span style={styles.courseDescLabel}>Description:</span>
+                      <span style={styles.courseDescText}>
+                        {cls.description || "No description provided."}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            ))
+          )}
 
           {/* Invite Card */}
-          <div className="class-card" style={styles.card}>
+          {currentClass && <div className="class-card" style={styles.card}>
             <p style={styles.cardLabel}>Invite</p>
 
             {/* Invite Link */}
@@ -426,10 +452,10 @@ export default function ClassInfoPage() {
                 Regenerate Link
               </button>
             )}
-          </div>
+          </div>}
 
           {/* Danger Zone */}
-          {isInstructor && (
+          {isInstructor && currentClass && (
             <div className="class-card" style={styles.dangerZone}>
               <p style={styles.dangerLabel}>Danger Zone</p>
               <button style={styles.archiveBtn} onClick={handleArchiveClass} disabled={loading}>

@@ -20,6 +20,11 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Join class states
+  const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
+
   // Form states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -47,6 +52,28 @@ export default function CoursesPage() {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  const handleJoinSubmit = async (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+    setJoinLoading(true);
+    try {
+      let codeToUse = joinCode.trim();
+      const parts = codeToUse.split('/join/');
+      if (parts.length > 1) {
+        codeToUse = parts[1].split('/')[0];
+      }
+      await joinClassByCode(codeToUse);
+      addToast("Successfully joined the class!", "success");
+      setJoinModalOpen(false);
+      setJoinCode("");
+      fetchCourses();
+    } catch (err) {
+      addToast(err.response?.data?.message || "Failed to join class", "error");
+    } finally {
+      setJoinLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -152,22 +179,29 @@ const handleDelete = (id) => {
                 Manage your educational programs and content.
               </p>
             </div>
-            {isInstructor && (
-              <button onClick={() => openModal()} style={styles.createBtn}>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Create Course
-              </button>
-            )}
+            <div style={{ display: "flex", gap: "10px" }}>
+              {(user?.role === "student" || !user?.role || user?.role !== "instructor") && (
+                <button onClick={() => setJoinModalOpen(true)} style={{...styles.createBtn, background: "#7C3AED"}}>
+                  + Join Class
+                </button>
+              )}
+              {isInstructor && (
+                <button onClick={() => openModal()} style={styles.createBtn}>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Create Course
+                </button>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -336,6 +370,48 @@ const handleDelete = (id) => {
         onConfirm={executeDelete}
         message="Are you sure you want to delete this course?"
       />
+
+      <Modal
+        isOpen={joinModalOpen}
+        onClose={() => setJoinModalOpen(false)}
+        title="Join a Class"
+      >
+        <form onSubmit={handleJoinSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "14px", fontWeight: "500", marginBottom: "8px", color: "#374151" }}>
+              Class Code or Invite Link
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 7B3X9Q or https://.../join/..."
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              style={{
+                width: "100%", padding: "10px", borderRadius: "8px",
+                border: "1px solid #D1D5DB", outline: "none", fontSize: "14px",
+                fontFamily: "'DM Sans', sans-serif"
+              }}
+              required
+            />
+            <p style={{ fontSize: "12px", color: "#6B7280", marginTop: "6px", fontFamily: "'DM Sans', sans-serif" }}>
+              Ask your instructor for the class code, then enter it here.
+            </p>
+          </div>
+          <button 
+            type="submit" 
+            disabled={joinLoading}
+            style={{
+              padding: "10px", borderRadius: "8px", border: "none",
+              background: joinLoading ? "#9CA3AF" : "#7C3AED", color: "#fff",
+              fontWeight: "500", cursor: joinLoading ? "not-allowed" : "pointer",
+              fontFamily: "'DM Sans', sans-serif", fontSize: "14px", marginTop: "8px",
+              display: "flex", justifyContent: "center"
+            }}
+          >
+            {joinLoading ? "Joining..." : "Join Class"}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 }
