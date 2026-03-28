@@ -974,7 +974,7 @@ const styles = {
     zIndex: 100,
   },
   topNavLeft: { display: "flex", alignItems: "center", gap: "12px" },
-  topNavRight: { display: "flex", alignItems: "center", gap: "16px" },
+  topNavRight: { display: "flex", alignItems: "center", gap: "15px", flexWrap: "nowrap" },
   toggleBtn: {
     background: "none",
     border: "none",

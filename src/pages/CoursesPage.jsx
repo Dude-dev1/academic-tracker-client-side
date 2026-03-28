@@ -436,7 +436,7 @@ const styles = {
     zIndex: 10,
   },
   topNavLeft: { display: "flex", alignItems: "center", gap: "12px" },
-  topNavRight: { display: "flex", alignItems: "center", gap: "16px" },
+  topNavRight: { display: "flex", alignItems: "center", gap: "15px", flexWrap: "nowrap" },
   toggleBtn: {
     background: "none",
     border: "none",
@@ -629,7 +629,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 100,
+    zIndex: 10000,
     padding: "20px",
   },
   modalContent: {

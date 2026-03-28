@@ -826,7 +826,7 @@ const styles = {
     background: "rgba(17, 24, 39, 0.6)",
     backdropFilter: "blur(4px)",
     display: "flex", alignItems: "center", justifyContent: "center",
-    zIndex: 1000,
+    zIndex: 10000,
     padding: "20px"
   },
   modalContent: {
