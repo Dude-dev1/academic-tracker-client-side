@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import chat1 from "../assets/chat-1.jpg";
 import chat2 from "../assets/chat-2.jpg";
 import chat3 from "../assets/chat-3.jpg";
@@ -17,6 +17,27 @@ const Logo = () => (
 
 export default function LandingPage() {
   const [selectedFeature, setSelectedFeature] = useState(null);
+  const [studentCount, setStudentCount] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const end = 12;
+    const duration = 2000; // 2 seconds
+    const interval = 20; // ms
+    const increment = end / (duration / interval);
+    
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setStudentCount(end);
+        clearInterval(timer);
+      } else {
+        setStudentCount(Math.ceil(start));
+      }
+    }, interval);
+    
+    return () => clearInterval(timer);
+  }, []);
 
   const features = [
     {
@@ -144,16 +165,19 @@ export default function LandingPage() {
           </p>
           <div style={styles.heroButtons}>
             <a href="/signup" style={styles.primaryBtn} className="btn-hover">Get Started</a>
-            <a href="#about" style={styles.secondaryBtnBg} className="btn-hover">
-               <span style={styles.iconCircle}>▶</span> Learn More
-            </a>
+            <div style={styles.trustBadge}>
+               <div style={styles.stars}>★★★★★</div>
+               <span style={styles.trustText}>Loved by 12k+ students</span>
+            </div>
           </div>
         </div>
         <div style={styles.heroRight}>
           <div style={styles.imageGrid}>
             <div style={{...styles.imgBox, gridColumn: "1 / span 2", gridRow: "1 / span 2", height: "240px", backgroundImage: "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800')", backgroundSize: "cover", backgroundPosition: "center"}}></div>
             <div style={{...styles.imgBox, height: "115px", backgroundImage: "url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400')", backgroundSize: "cover"}}></div>
-            <div style={{...styles.imgBox, height: "115px", background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "24px", fontWeight: "bold"}}>+12k</div>
+            <div style={{...styles.imgBox, height: "115px", background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "32px", fontWeight: "bold"}}>
+              +{studentCount}k
+            </div>
           </div>
         </div>
       </section>
@@ -392,26 +416,21 @@ const styles = {
     fontSize: "16px",
     boxShadow: "0 4px 15px rgba(37, 99, 235, 0.3)",
   },
-  secondaryBtnBg: {
+  trustBadge: {
     display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    textDecoration: "none",
-    fontWeight: "600",
-    color: "#111827",
-    fontSize: "16px",
+    flexDirection: "column",
+    gap: "4px",
+    marginLeft: "10px"
   },
-  iconCircle: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "50%",
-    background: "#fff",
-    color: "#2563EB",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+  stars: {
+    color: "#FBBF24",
+    fontSize: "16px",
+    letterSpacing: "4px"
+  },
+  trustText: {
     fontSize: "14px",
+    color: "#6B7280",
+    fontWeight: "500"
   },
   heroRight: {
     flex: 1,
