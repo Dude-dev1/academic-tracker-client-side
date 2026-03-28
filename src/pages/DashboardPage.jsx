@@ -684,6 +684,14 @@ export default function DashboardPage() {
   const [joinCode, setJoinCode] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
 
+  // New assignment state
+  const [newAssignment, setNewAssignment] = useState({
+    title: "",
+    dueDate: "",
+    courseId: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -707,6 +715,25 @@ export default function DashboardPage() {
       alert(err.response?.data?.message || "Failed to join class");
     } finally {
       setJoinLoading(false);
+    }
+  };
+
+  const handleCreateAssignment = async () => {
+    if (!newAssignment.title || !newAssignment.dueDate) {
+      alert("Please fill in the title and due date.");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const res = await assignmentService.createAssignment(newAssignment);
+      setAssignments((prev) => [...prev, res.data]);
+      setIsModalOpen(false);
+      setNewAssignment({ title: "", dueDate: "", courseId: "" });
+      alert("Assignment created successfully!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create assignment");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -831,6 +858,10 @@ export default function DashboardPage() {
             <input
               type="text"
               placeholder="Enter assignment title"
+              value={newAssignment.title}
+              onChange={(e) =>
+                setNewAssignment({ ...newAssignment, title: e.target.value })
+              }
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -852,6 +883,10 @@ export default function DashboardPage() {
             </label>
             <input
               type="date"
+              value={newAssignment.dueDate}
+              onChange={(e) =>
+                setNewAssignment({ ...newAssignment, dueDate: e.target.value })
+              }
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -872,6 +907,10 @@ export default function DashboardPage() {
               Course
             </label>
             <select
+              value={newAssignment.courseId}
+              onChange={(e) =>
+                setNewAssignment({ ...newAssignment, courseId: e.target.value })
+              }
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -879,9 +918,12 @@ export default function DashboardPage() {
                 border: "1px solid #D1D5DB",
               }}
             >
-              <option>Select a course</option>
-              <option>Web Tech</option>
-              <option>Data Structures</option>
+              <option value="">Select a course</option>
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.name}
+                </option>
+              ))}
             </select>
           </div>
           <button
@@ -893,11 +935,13 @@ export default function DashboardPage() {
               border: "none",
               borderRadius: "6px",
               fontWeight: "500",
-              cursor: "pointer",
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              opacity: isSubmitting ? 0.7 : 1,
             }}
-            onClick={() => setIsModalOpen(false)}
+            onClick={handleCreateAssignment}
+            disabled={isSubmitting}
           >
-            Save Assignment
+            {isSubmitting ? "Saving..." : "Save Assignment"}
           </button>
         </div>
       </Modal>
