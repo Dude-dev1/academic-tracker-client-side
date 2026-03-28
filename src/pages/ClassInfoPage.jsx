@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/ui/Sidebar";
 import Modal from "../components/ui/Modal";
-import { getClasses, createClass, addMember } from "../services/classService";
+import { getClasses, createClass, addMember, regenerateCode, archiveClass, deleteClass } from "../services/classService";
 
 export default function ClassInfoPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -68,6 +68,55 @@ export default function ClassInfoPage() {
     }
   };
 
+  const handleRegenerateCode = async () => {
+    if (!currentClass) return;
+    if (!window.confirm("Are you sure you want to regenerate the class code? The old code will no longer work.")) return;
+    
+    setLoading(true);
+    try {
+      const res = await regenerateCode(currentClass._id || currentClass.id);
+      if (res.data) setCurrentClass(res.data);
+      alert("Class code regenerated successfully");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to regenerate code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleArchiveClass = async () => {
+    if (!currentClass) return;
+    const action = currentClass.isArchived ? "unarchive" : "archive";
+    if (!window.confirm(`Are you sure you want to ${action} this class?`)) return;
+
+    setLoading(true);
+    try {
+      const res = await archiveClass(currentClass._id || currentClass.id);
+      if (res.data) setCurrentClass(res.data);
+      alert(`Class ${action}d successfully`);
+    } catch (err) {
+      alert(err.response?.data?.message || `Failed to ${action} class`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClass = async () => {
+    if (!currentClass) return;
+    if (!window.confirm("Are you sure you want to delete this class? This action cannot be undone.")) return;
+
+    setLoading(true);
+    try {
+      await deleteClass(currentClass._id || currentClass.id);
+      alert("Class deleted successfully");
+      navigate("/dashboard");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete class");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const firstName =
     user?.displayName?.split(" ")[0] ||
     user?.name?.split(" ")[0] ||
@@ -86,6 +135,14 @@ export default function ClassInfoPage() {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isInstructor =
+    user &&
+    currentClass &&
+    (currentClass.instructorId === user._id ||
+      currentClass.instructorId === user.id ||
+      currentClass.instructorId?._id === user._id ||
+      currentClass.instructorId?._id === user.id);
 
   return (
     <div style={styles.root}>
@@ -353,28 +410,34 @@ export default function ClassInfoPage() {
               </button>
             </div>
 
-            <button style={styles.regenBtn}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <polyline points="23 4 23 10 17 10" />
-                <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
-              </svg>
-              Regenerate Link
-            </button>
+            {isInstructor && (
+              <button style={styles.regenBtn} onClick={handleRegenerateCode} disabled={loading}>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                </svg>
+                Regenerate Link
+              </button>
+            )}
           </div>
 
           {/* Danger Zone */}
-          <div className="class-card" style={styles.dangerZone}>
-            <p style={styles.dangerLabel}>Danger Zone</p>
-            <button style={styles.archiveBtn}>Archive Class</button>
-            <button style={styles.deleteBtn}>Delete Class</button>
-          </div>
+          {isInstructor && (
+            <div className="class-card" style={styles.dangerZone}>
+              <p style={styles.dangerLabel}>Danger Zone</p>
+              <button style={styles.archiveBtn} onClick={handleArchiveClass} disabled={loading}>
+                {currentClass?.isArchived ? "Unarchive Class" : "Archive Class"}
+              </button>
+              <button style={styles.deleteBtn} onClick={handleDeleteClass} disabled={loading}>Delete Class</button>
+            </div>
+          )}
         </main>
       </div>
     </div>
