@@ -72,9 +72,27 @@ export default function ProfilePage() {
   return (
     <div style={styles.root}>
       <style>{`
-        
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+          .profile-hero-mobile {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 20px !important;
+            gap: 16px !important;
+          }
+          .profile-hero-info-mobile {
+            width: 100% !important;
+          }
+          .edit-profile-btn-mobile {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .badges-group-mobile {
+            padding-bottom: 8px !important;
+          }
+        }
       `}</style>
 
       <Sidebar sidebarOpen={sidebarOpen} />
@@ -106,15 +124,15 @@ export default function ProfilePage() {
 
         <main style={styles.main}>
           {/* Hero */}
-          <div style={styles.profileHero}>
+          <div className="profile-hero-mobile" style={styles.profileHero}>
             <div style={styles.avatarLg}>{initials}</div>
-            <div style={styles.profileHeroInfo}>
+            <div className="profile-hero-info-mobile" style={styles.profileHeroInfo}>
               <p style={styles.profileName}>
                 {user?.name || user?.displayName || "Student"}
               </p>
               <p style={styles.profileRole}>
                 {user?.role === "instructor"
-                  ? "Faculty Member"
+                  ? "Instructor"
                   : "Computer Science · Student"}
               </p>
               <div style={styles.profileTags}>
@@ -176,7 +194,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
-            <button style={styles.editProfileBtn} onClick={() => navigate("/settings")}>
+            <button className="edit-profile-btn-mobile" style={styles.editProfileBtn} onClick={() => navigate("/settings")}>
               <svg
                 width="12"
                 height="12"
@@ -199,7 +217,7 @@ export default function ProfilePage() {
             <div style={styles.dividerLine} />
           </div>
 
-          <div style={styles.badgesGroup}>
+          <div className="badges-group-mobile" style={styles.badgesGroup}>
             {[
               {
                 icon: (
