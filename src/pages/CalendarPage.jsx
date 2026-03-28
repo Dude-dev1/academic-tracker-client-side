@@ -89,7 +89,7 @@ function CalendarGrid({ eventsMap, onSelectEvent, currentDay, currentMonth, curr
   );
 }
 
-function DetailPanel({ event, day, isClass, onEdit, onDelete, currentYear, currentMonth }) {
+function DetailPanel({ event, day, isClass, onEdit, onDelete, currentYear, currentMonth, user }) {
   if (!event) return null;
   const date = event.date ? new Date(event.date) : new Date(currentYear, currentMonth, day);
   const suffix = day === 1 || day === 21 || day === 31 ? "st" : day === 2 || day === 22 ? "nd" : day === 3 || day === 23 ? "rd" : "th";
@@ -137,9 +137,9 @@ function DetailPanel({ event, day, isClass, onEdit, onDelete, currentYear, curre
       )}
       {event.desc && <div style={styles.detailDesc}>{event.desc}</div>}
       <div style={styles.detailActions}>
-        {isClass ? (
+        {isClass && user?.role !== "instructor" ? (
           <p style={styles.classNotice}>
-            Class events can only be edited by course representatives.
+            Class events can only be edited by instructors.
           </p>
         ) : (
           <>
@@ -283,7 +283,7 @@ const handleDeleteEvent = (id) => {
 
   const handleSubmit = async () => {
     try {
-      const payload = { ...formData, isClass: false };
+      const payload = { ...formData, isClass: isClass };
       if (!payload.title || !payload.date) {
         addToast("Failed", "Title and Date are required.", "error");
         return;
@@ -419,7 +419,7 @@ const handleDeleteEvent = (id) => {
                 {isClass ? "Class Events" : "My Events"}
               </div>
             </div>
-            {isClass ? (
+            {isClass && user?.role !== "instructor" ? (
               <span style={styles.readonlyBadge}>View only (Class events are auto-managed)</span>
             ) : (
               <button
@@ -460,6 +460,7 @@ const handleDeleteEvent = (id) => {
               onDelete={handleDeleteEvent}
               currentMonth={currentMonth}
               currentYear={currentYear}
+              user={user}
             />
           )}
         </main>
