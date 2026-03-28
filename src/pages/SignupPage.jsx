@@ -440,6 +440,7 @@ const styles = {
   inputIcon: { flexShrink: 0, transition: "stroke 0.18s" },
   input: {
     flex: 1,
+    minWidth: 0,
     border: "none",
     background: "transparent",
     fontSize: "14px",

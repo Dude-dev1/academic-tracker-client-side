@@ -391,6 +391,7 @@ const styles = {
   },
   input: {
     flex: 1,
+    minWidth: 0,
     border: "none",
     background: "transparent",
     fontSize: "14px",
