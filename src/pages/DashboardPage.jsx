@@ -656,7 +656,7 @@ export default function DashboardPage() {
   return (
     <div style={styles.root}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@700&display=swap');
+        
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
@@ -824,7 +824,7 @@ const styles = {
     flex: 1,
     minHeight: "100vh",
     width: "100%",
-    background: "#fafbfc",
+    background: "#F0F4FF",
     fontFamily: "'DM Sans', sans-serif",
   },
   sidebar: {

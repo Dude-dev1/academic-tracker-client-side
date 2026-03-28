@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap');
+
 /* CSS Custom Properties */
 :root {
   --color-primary-dark: #357abd;
@@ -7,7 +9,7 @@
   --color-danger: #ef4444;
   --color-overdue: #ef4444;
   --color-due-soon: #ef4444;
-  --color-background: #ffffff;
+  --color-background: #F0F4FF;
   --color-surface: #f9fafb;
 }
 
@@ -30,13 +32,62 @@ body {
   min-height: 100vh;
 }
 
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* MOBILE RESPONSIVE OVERRIDES */
 @media (max-width: 1024px) {
-  /* Generic layout containers */
-  main {
+  /* Generic layout containers - only target those with inline padding */
+  main[style] {
     padding: 16px !important;
-    max-width: 100vw !important;
-    overflow-x: hidden;
+    width: 100% !important;
+  }
+  
+  /* The main content area */
+  div[style*="flex: 1"], div[style*="flex: 1 1 0%"] {
+     min-width: 0 !important; /* Allow flex children to shrink below their content size */
+  }
+
+  /* Force things to wrap generally if they overflow */
+  div[style*="flexDirection: row"], div[style*="flex-direction: row"] {
+    flex-wrap: wrap; /* Removed !important to avoid breaking fixed headers */
+  }
+  
+  /* Filter row flex wrap */
+  div[style*="gap: 10px"],
+  div[style*="gap: 16px"],
+  div[style*="gap: 12px"][style*="marginBottom"] {
+    flex-wrap: wrap !important;
+  }
+
+  /* Prevent elements from pushing out */
+  div[style*="width: 100%"] {
+    max-width: 100% !important;
+  }
+
+  /* Button groups and badges */
+  button, span[style*="padding"] {
+    max-width: 100%;
+    white-space: normal !important;
+  }
+
+  /* Table-like headers should scroll if they can't fit */
+  .table-responsive {
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  /* Prevent modals from cutting off */
+  .modal-overlay > div {
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   /* Force multi-column grids to single column */

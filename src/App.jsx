@@ -29,7 +29,7 @@ function App() {
     <div
       className="flex flex-col min-h-screen"
       style={{
-        backgroundColor: darkMode ? "#111827" : "#f9fafb",
+        backgroundColor: darkMode ? "#111827" : "#F0F4FF",
       }}
     >
       <style>{`

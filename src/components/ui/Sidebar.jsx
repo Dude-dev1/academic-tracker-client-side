@@ -431,8 +431,9 @@ const Sidebar = ({ sidebarOpen = true }) => {
       <style>{`
         @media (max-width: 1024px) {
           /* Allow main content to wrap text properly instead of shrinking to 0 */
-          main, .content {
-             max-width: 100vw !important;
+          .content-area-mobile-override {
+             max-width: calc(100vw - 80px) !important;
+             overflow-x: hidden;
           }
         }
       `}</style>
