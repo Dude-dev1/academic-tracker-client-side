@@ -20,6 +20,13 @@ const Sidebar = ({ sidebarOpen = true }) => {
     setInternalExpanded(sidebarOpen);
   }, [sidebarOpen]);
 
+  // Collapse sidebar when route changes on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setInternalExpanded(false);
+    }
+  }, [location.pathname, isMobile]);
+
   // Use parent prop on desktop, local on mobile
   const expanded = isMobile ? internalExpanded : sidebarOpen;
   
